@@ -1,0 +1,32 @@
+package director
+
+type Command map[string]CommandDefinition
+
+type CommandDefinition struct {
+	Arguments      map[string]Argument `json:"arguments"`
+	Command        string              `json:"command"`
+	Disabled       bool                `json:"disabled"`
+	Fields         []CmdField          `json:"fields"`
+	Imports        []interface{}       `json:"imports"`
+	IsString       interface{}         `json:"is_string"`
+	MethodsExecute string              `json:"methods_execute"`
+	ObjectName     string              `json:"object_name"`
+	ObjectType     string              `json:"object_type"`
+	Timeout        int                 `json:"timeout"`
+	Vars           struct {
+	} `json:"vars"`
+	Zone interface{} `json:"zone"`
+	UUID string      `json:"uuid"`
+}
+
+type Argument struct {
+	SetIf    string `json:"set_if"`
+	Required bool   `json:"required"`
+	SkeyKey  bool   `json:"skip_key"`
+}
+
+type CmdField struct {
+	DatafieldID int         `json:"datafield_id"`
+	IsRequired  string      `json:"is_required"`
+	VarFilter   interface{} `json:"var_filter"`
+}
