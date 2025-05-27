@@ -13,6 +13,7 @@ import (
 )
 
 func cmpGenerate(t *testing.T, testName string, cmd *cobra.Command) {
+	viper.Set(director.WriteConfigFlagName, true)
 	reset := initUUIDGenerator()
 	defer reset()
 	g := director.Generator{
@@ -22,7 +23,9 @@ func cmpGenerate(t *testing.T, testName string, cmd *cobra.Command) {
 	}
 	var out bytes.Buffer
 	g.Output = &out
-	g.Generate()
+	if err := g.Generate(); err != nil {
+		t.Errorf("Error generating config: %v", err)
+	}
 	should, err := os.ReadFile(testFileName(testName))
 	if err != nil {
 		t.Errorf("Cannot read test output: %v", err)

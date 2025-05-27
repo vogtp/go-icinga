@@ -9,18 +9,19 @@ import (
 )
 
 const (
-	GenerateFlagName = "icinga.director" // GenerateFlagName is the name of the flag used to trigger gerneration
+	WriteConfigFlagName  = "icinga.director.write"  // GenerateFlagName is the name of the flag used to trigger gerneration
+	ImportConfigFlagName = "icinga.director.import" // ImportFlagName run icinga cli director basket restore
 )
 
 // GenerateDirectorConfigPFlag adds a pflag for gerneration to the FlagSet
 func GenerateDirectorConfigPFlag(s *pflag.FlagSet) {
-	s.Bool(GenerateFlagName, false, "Generate a icinga director config")
+	s.Bool(WriteConfigFlagName, false, "Generate a icinga director config and write it out")
+	s.Bool(ImportConfigFlagName, false, "Generate a icinga director config and run icinga cli director basket restore")
 }
 
 // ShouldGenerate checks the flag if generation should be triggered
 func ShouldGenerate() bool {
-	b := viper.GetBool(GenerateFlagName)
-	return b
+	return viper.GetBool(WriteConfigFlagName) || viper.GetBool(ImportConfigFlagName)
 }
 
 func (g *Generator) parsePFlags() {
@@ -29,7 +30,7 @@ func (g *Generator) parsePFlags() {
 	fieldID := 1
 	cmdFields := make([]cmdField, 0)
 	g.CobraCmd.Flags().VisitAll(func(f *pflag.Flag) {
-		if f.Hidden || f.Name == GenerateFlagName || f.Name == "help" {
+		if f.Hidden || f.Name == WriteConfigFlagName || f.Name == ImportConfigFlagName || f.Name == "help" {
 			return
 		}
 		fName := idPrintf("%s_%s", g.id, f.Name)

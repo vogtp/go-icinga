@@ -1,6 +1,7 @@
 package director
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,7 +9,9 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/vogtp/go-icinga/pkg/checks"
+	"github.com/vogtp/go-icinga/pkg/icingacli"
 )
 
 // Generator for icinga directory basket config files
@@ -29,7 +32,7 @@ type Generator struct {
 }
 
 // Generate writes the icinga basket config to the passed writer
-func (g *Generator) Generate() {
+func (g *Generator) Generate() error {
 	g.cobraParams = getCobraParams(g.CobraCmd)
 	g.name = strings.Join(g.cobraParams, " ")
 	g.id = strings.Join(g.cobraParams, "-")
@@ -38,11 +41,21 @@ func (g *Generator) Generate() {
 	}
 	c := g.generate()
 
-	if g.Output != nil {
-		if err := prettyPrint(c, g.Output); err != nil {
-			slog.Warn("Cannot write config", "err", err)
+	var out bytes.Buffer
+	var w io.Writer = &out
+	if g.Output != nil && viper.GetBool(WriteConfigFlagName) {
+		w = io.MultiWriter(w, g.Output)
+	}
+	if err := prettyPrint(c, w); err != nil {
+		return fmt.Errorf("cannot write config: %w", err)
+	}
+	if viper.GetBool(ImportConfigFlagName) {
+		slog.Info("Importing icinga director config", "plugin", g.name)
+		if err := icingacli.ImportDirectorBasket(&out); err != nil {
+			return fmt.Errorf("cannot import basket into director: %w", err)
 		}
 	}
+	return nil
 }
 
 func prettyPrint(c *Config, w io.Writer) error {
