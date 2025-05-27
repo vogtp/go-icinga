@@ -12,6 +12,35 @@ import (
 	"github.com/vogtp/go-icinga/pkg/director"
 )
 
+func cmpGenerate(t *testing.T, testName string, cmd *cobra.Command) {
+	reset := initUUIDGenerator()
+	defer reset()
+	g := director.Generator{
+		CobraCmd:       cmd,
+		Description:    "Test Icinga Directory Bucket",
+		DescriptionURL: "https://github.com/vogtp/go-icinga/",
+	}
+	var out bytes.Buffer
+	g.Generate(&out)
+	should, err := os.ReadFile(testFileName(testName))
+	if err != nil {
+		t.Errorf("Cannot read test output: %v", err)
+	}
+	outStr := out.String()
+	if string(should) != outStr {
+		fmt.Println(out.String())
+		f, err := os.OpenFile(shouldFileName(testName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+		if err != nil {
+			t.Errorf("Cannot open output file: %v", err)
+		}
+		defer f.Close()
+		if _, err := f.WriteString(outStr); err != nil {
+			t.Errorf("Cannot write output file: %v", err)
+		}
+		t.Errorf("Output not identital.\nComape %s and %s", shouldFileName(testName), testFileName(testName))
+	}
+}
+
 func getTestCmd() *cobra.Command {
 	testCmd := &cobra.Command{
 		Use: "testCmd",
@@ -90,31 +119,4 @@ func Test_GenerateSubCommand(t *testing.T) {
 	})
 	cmd.AddCommand(testCmd)
 	cmpGenerate(t, testName, testCmd)
-}
-
-func cmpGenerate(t *testing.T, testName string, cmd *cobra.Command) {
-	reset := initUUIDGenerator()
-	defer reset()
-	g := director.Generator{
-		CobraCmd: cmd,
-	}
-	var out bytes.Buffer
-	g.Generate(&out)
-	should, err := os.ReadFile(testFileName(testName))
-	if err != nil {
-		t.Errorf("Cannot read test output: %v", err)
-	}
-	outStr := out.String()
-	if string(should) != outStr {
-		fmt.Println(out.String())
-		f, err := os.OpenFile(shouldFileName(testName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
-		if err != nil {
-			t.Errorf("Cannot open output file: %v", err)
-		}
-		defer f.Close()
-		if _, err := f.WriteString(outStr); err != nil {
-			t.Errorf("Cannot write output file: %v", err)
-		}
-		t.Errorf("Output not identital.\nComape %s and %s", shouldFileName(testName), testFileName(testName))
-	}
 }

@@ -68,8 +68,8 @@
         "tpl-service-generic"
       ],
       "max_check_attempts": 0,
-      "notes": "",
-      "notes_url": "",
+      "notes": "Test Icinga Directory Bucket",
+      "notes_url": "https://github.com/vogtp/go-icinga/",
       "object_name": "tpl-service-testCmd",
       "object_type": "template",
       "retry_interval": 3600,
