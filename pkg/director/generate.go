@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -56,7 +55,7 @@ func (g *Generator) generate() *Config {
 		ObjectName:     cmdID,
 		ObjectType:     "object",
 		Timeout:        30,
-		UUID:           uuid.NewString(),
+		UUID:           GenerateUUID(),
 	}
 	g.cobraParams = g.cobraParams[1:]
 	srvID := fmt.Sprintf("%vtpl-service-%s", g.NamePrefix, g.id)
@@ -72,7 +71,7 @@ func (g *Generator) generate() *Config {
 		ObjectType: "template",
 		Fields:     make([]interface{}, 0),
 		Vars:       make(map[string]any),
-		UUID:       uuid.NewString(),
+		UUID:       GenerateUUID(),
 	}
 	g.srvDef.Vars["criticality"] = "C"
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -46,7 +45,7 @@ func (g *Generator) parsePFlags() {
 			Caption:     fmt.Sprintf("%s: %s", g.name, strings.ReplaceAll(f.Name, "-", " ")),
 			Description: f.Usage,
 			Datatype:    datatype,
-			UUID:        uuid.NewString(),
+			UUID:        GenerateUUID(),
 		}
 		g.srvDef.Vars[fName] = f.DefValue
 		cmdFields = append(cmdFields, cmdField{
@@ -67,7 +66,7 @@ func (g *Generator) parsePFlags() {
 			Varname:  fName,
 			Caption:  fmt.Sprintf("%s: Command%v", g.name, i),
 			Datatype: "Icinga\\Module\\Director\\DataType\\DataTypeString",
-			UUID:     uuid.NewString(),
+			UUID:     GenerateUUID(),
 		}
 		g.srvDef.Vars[fName] = cp
 		cmdFields = append(cmdFields, cmdField{

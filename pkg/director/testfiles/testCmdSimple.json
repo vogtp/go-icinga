@@ -1,0 +1,110 @@
+{
+  "Command": {
+    "cmd-check-testCmd": {
+      "arguments": {
+        "--testFlagBool": {
+          "set_if": "$testCmd_testFlagBool$",
+          "required": false,
+          "skip_key": false
+        },
+        "--testFlagString": {
+          "set_if": "$testCmd_testFlagString$",
+          "required": false,
+          "skip_key": false
+        }
+      },
+      "command": "/usr/lib64/nagios/plugins/testCmd",
+      "disabled": false,
+      "fields": [
+        {
+          "datafield_id": 1,
+          "is_required": "n",
+          "var_filter": null
+        },
+        {
+          "datafield_id": 2,
+          "is_required": "n",
+          "var_filter": null
+        }
+      ],
+      "imports": [],
+      "is_string": null,
+      "methods_execute": "PluginCheck",
+      "object_name": "cmd-check-testCmd",
+      "object_type": "object",
+      "timeout": 30,
+      "vars": {},
+      "zone": null,
+      "uuid": "4c9c22a6-80a5-4cfb-a857-896d84f24e04"
+    }
+  },
+  "ServiceTemplate": {
+    "tpl-service-testCmd": {
+      "action_url": null,
+      "apply_for": null,
+      "assign_filter": null,
+      "check_command": "cmd-check-testCmd",
+      "check_interval": 86400,
+      "check_period": null,
+      "check_timeout": null,
+      "command_endpoint": null,
+      "disabled": false,
+      "display_name": null,
+      "enable_active_checks": null,
+      "enable_event_handler": null,
+      "enable_flapping": null,
+      "enable_notifications": false,
+      "enable_passive_checks": null,
+      "enable_perfdata": false,
+      "event_command": null,
+      "fields": [],
+      "flapping_threshold_high": null,
+      "flapping_threshold_low": null,
+      "groups": null,
+      "host": null,
+      "icon_image": "",
+      "icon_image_alt": null,
+      "imports": [
+        "tpl-service-generic"
+      ],
+      "max_check_attempts": 0,
+      "notes": "",
+      "notes_url": "",
+      "object_name": "tpl-service-testCmd",
+      "object_type": "template",
+      "retry_interval": 3600,
+      "service_set": null,
+      "template_choice": null,
+      "use_agent": null,
+      "use_var_overrides": null,
+      "vars": {
+        "criticality": "C",
+        "testCmd_testFlagBool": "false",
+        "testCmd_testFlagString": ""
+      },
+      "volatile": null,
+      "zone": null,
+      "uuid": "3300dc08-2db2-414a-badf-8f1f5bb266bb"
+    }
+  },
+  "Datafield": {
+    "1": {
+      "varname": "testCmd_testFlagBool",
+      "caption": "testCmd: testFlagBool",
+      "description": "A boolean test flag",
+      "datatype": "Icinga\\Module\\Director\\DataType\\DataTypeBoolean",
+      "format": null,
+      "settings": {},
+      "uuid": "3e4a7d42-7e6c-4e07-8c8d-746bef32adf3"
+    },
+    "2": {
+      "varname": "testCmd_testFlagString",
+      "caption": "testCmd: testFlagString",
+      "description": "A string test flag",
+      "datatype": "Icinga\\Module\\Director\\DataType\\DataTypeString",
+      "format": null,
+      "settings": {},
+      "uuid": "f4880941-391f-4c98-9361-a70256fa6d5d"
+    }
+  }
+}
