@@ -10,9 +10,10 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/vogtp/go-icinga/pkg/director"
+	"github.com/vogtp/go-icinga/pkg/icinga"
 )
 
-func cmpGenerate(t *testing.T, testName string, cmd *cobra.Command) {
+func cmpGenerate(t *testing.T, testName string, cmd *cobra.Command, crit icinga.Criticality) {
 	viper.Set(director.WriteConfigFlagName, true)
 	reset := initUUIDGenerator()
 	defer reset()
@@ -20,6 +21,7 @@ func cmpGenerate(t *testing.T, testName string, cmd *cobra.Command) {
 		CobraCmd:       cmd,
 		Description:    "Test Icinga Directory Bucket",
 		DescriptionURL: "https://github.com/vogtp/go-icinga/",
+		Criticality:    crit,
 	}
 	var out bytes.Buffer
 	g.Output = &out
@@ -106,7 +108,8 @@ func shouldFileName(testName string) string {
 func Test_GenerateCommand(t *testing.T) {
 	testName := "testCmdSimple"
 	cmd := getTestCmd()
-	cmpGenerate(t, testName, cmd)
+	var crit icinga.Criticality
+	cmpGenerate(t, testName, cmd, crit)
 }
 
 func Test_GenerateSubCommand(t *testing.T) {
@@ -123,5 +126,5 @@ func Test_GenerateSubCommand(t *testing.T) {
 		}
 	})
 	cmd.AddCommand(testCmd)
-	cmpGenerate(t, testName, testCmd)
+	cmpGenerate(t, testName, testCmd, icinga.Criticality7x24)
 }

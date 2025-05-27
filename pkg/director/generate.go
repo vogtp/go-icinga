@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/vogtp/go-icinga/pkg/checks"
+	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/icingacli"
 )
 
@@ -22,6 +23,7 @@ type Generator struct {
 	Description    string         // Description (optional) is the icinga Notes field
 	DescriptionURL string         // DescriptionURL (optional) is the icinga NotesURL field
 	Output         io.Writer      // Output is a io.Writer where the string output is written to
+	Criticality    icinga.Criticality
 
 	name        string
 	id          string
@@ -98,7 +100,7 @@ func (g *Generator) generate() *Config {
 		Vars:       make(map[string]any),
 		UUID:       GenerateUUID(),
 	}
-	g.srvDef.Vars["criticality"] = "C"
+	g.srvDef.Vars["criticality"] = g.Criticality.Get()
 
 	g.parsePFlags()
 

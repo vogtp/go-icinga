@@ -88,7 +88,7 @@
       "use_agent": null,
       "use_var_overrides": null,
       "vars": {
-        "criticality": "C",
+        "criticality": "A",
         "testCmd_testSubCmd_cmd_0": "testSubCmd",
         "testCmd_testSubCmd_testFlagBoolSubCmd": "false",
         "testCmd_testSubCmd_testFlagStringSubCmd": ""
