@@ -58,7 +58,7 @@ func (g *Generator) parsePFlags() {
 	})
 	for i, cp := range g.cobraParams {
 		fName := idPrintf("%s_cmd_%v", g.id, i)
-		args[fmt.Sprintf("%s", cp)] = argument{
+		args[cp] = argument{
 			//	SetIf:    fmt.Sprintf("$%s$", fName),
 			Value:    fmt.Sprintf("$%s$", fName),
 			Required: true,

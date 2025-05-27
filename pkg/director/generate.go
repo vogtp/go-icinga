@@ -89,8 +89,8 @@ func (g *Generator) generate() *Config {
 	g.srvDef = service{
 		ObjectName:          srvID,
 		CheckCommand:        cmdID,
-		CheckInterval:       86400,
-		RetryInterval:       3600,
+		CheckInterval:       300,
+		RetryInterval:       60,
 		Notes:               g.Description,
 		NotesURL:            g.DescriptionURL,
 		EnablePerfdata:      true,
