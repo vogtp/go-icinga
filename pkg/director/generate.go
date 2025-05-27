@@ -12,16 +12,15 @@ import (
 )
 
 type Generator struct {
-	NamePrefix string
-	name       string
-	id         string
-	//Flags          *pflag.FlagSet
+	NamePrefix     string
+	name           string
 	CobraCmd       *cobra.Command
 	Description    string
 	DescriptionURL string
 
+	id          string
 	cobraParams []string
-	srvDef      Service
+	srvDef      service
 	cmdDef      CommandDefinition
 	c           *Config
 }
@@ -43,8 +42,8 @@ func (g *Generator) Generate(w io.Writer) {
 
 func (g *Generator) generate() *Config {
 	g.c = &Config{
-		Command:         make(Command),
-		ServiceTemplate: make(ServiceTemplate),
+		Command:         make(command),
+		ServiceTemplate: make(serviceTemplate),
 	}
 	cmdID := fmt.Sprintf("%vcmd-check-%s", g.NamePrefix, g.id)
 	g.cmdDef = CommandDefinition{
@@ -58,7 +57,7 @@ func (g *Generator) generate() *Config {
 	}
 	g.cobraParams = g.cobraParams[1:]
 	srvID := fmt.Sprintf("%vtpl-service-%s", g.NamePrefix, g.id)
-	g.srvDef = Service{
+	g.srvDef = service{
 		ObjectName:    srvID,
 		CheckCommand:  cmdID,
 		CheckInterval: 86400,

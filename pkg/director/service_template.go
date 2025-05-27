@@ -1,8 +1,8 @@
 package director
 
-type ServiceTemplate map[string]Service
+type serviceTemplate map[string]service
 
-type Service struct {
+type service struct {
 	ActionURL             interface{}    `json:"action_url"`
 	ApplyFor              interface{}    `json:"apply_for"`
 	AssignFilter          interface{}    `json:"assign_filter"`

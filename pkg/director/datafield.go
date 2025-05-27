@@ -1,6 +1,6 @@
 package director
 
-type Datafield struct {
+type datafield struct {
 	Varname     string      `json:"varname"`
 	Caption     string      `json:"caption"`
 	Description string      `json:"description"`

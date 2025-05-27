@@ -1,12 +1,12 @@
 package director
 
-type Command map[string]CommandDefinition
+type command map[string]CommandDefinition
 
 type CommandDefinition struct {
-	Arguments      map[string]Argument `json:"arguments"`
+	Arguments      map[string]argument `json:"arguments"`
 	Command        string              `json:"command"`
 	Disabled       bool                `json:"disabled"`
-	Fields         []CmdField          `json:"fields"`
+	Fields         []cmdField          `json:"fields"`
 	Imports        []interface{}       `json:"imports"`
 	IsString       interface{}         `json:"is_string"`
 	MethodsExecute string              `json:"methods_execute"`
@@ -19,13 +19,13 @@ type CommandDefinition struct {
 	UUID string      `json:"uuid"`
 }
 
-type Argument struct {
+type argument struct {
 	SetIf    string `json:"set_if"`
 	Required bool   `json:"required"`
 	SkeyKey  bool   `json:"skip_key"`
 }
 
-type CmdField struct {
+type cmdField struct {
 	DatafieldID int         `json:"datafield_id"`
 	IsRequired  string      `json:"is_required"`
 	VarFilter   interface{} `json:"var_filter"`

@@ -1,7 +1,7 @@
 package director
 
 type Config struct {
-	Command         Command           `json:"Command"`
-	ServiceTemplate ServiceTemplate   `json:"ServiceTemplate"`
-	Datafield       map[int]Datafield `json:"Datafield"`
+	Command         command           `json:"Command"`
+	ServiceTemplate serviceTemplate   `json:"ServiceTemplate"`
+	Datafield       map[int]datafield `json:"Datafield"`
 }
