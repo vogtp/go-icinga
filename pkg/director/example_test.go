@@ -50,6 +50,9 @@ func initUUIDGenerator() func() {
 	orig := director.GenerateUUID
 	director.GenerateUUID = func() string {
 		testUUIDsIdx++
+		if testUUIDsIdx >= len(testUUIDs) {
+			testUUIDsIdx = 0
+		}
 		return testUUIDs[testUUIDsIdx]
 	}
 	return func() {
@@ -58,23 +61,53 @@ func initUUIDGenerator() func() {
 	}
 }
 
-func Test_Generate(t *testing.T) {
+func testFileName(testName string) string {
+	return fmt.Sprintf("testfiles/%s.json", testName)
+}
+
+func shouldFileName(testName string) string {
+	return fmt.Sprintf("testfiles/ignore_test_output_%s.json", testName)
+}
+
+func Test_GenerateCommand(t *testing.T) {
+	testName := "testCmdSimple"
+	cmd := getTestCmd()
+	cmpGenerate(t, testName, cmd)
+}
+
+func Test_GenerateSubCommand(t *testing.T) {
+	testName := "testCmdSub"
+	cmd := getTestCmd()
+	testCmd := &cobra.Command{
+		Use: "testSubCmd",
+	}
+	testCmd.Flags().Bool("testFlagBoolSubCmd", false, "A boolean test sub command flag")
+	testCmd.Flags().String("testFlagStringSubCmd", "", "A string test sub command flag")
+	testCmd.Flags().VisitAll(func(f *pflag.Flag) {
+		if err := viper.BindPFlag(f.Name, f); err != nil {
+			panic(err)
+		}
+	})
+	cmd.AddCommand(testCmd)
+	cmpGenerate(t, testName, testCmd)
+}
+
+func cmpGenerate(t *testing.T, testName string, cmd *cobra.Command) {
 	reset := initUUIDGenerator()
 	defer reset()
 	g := director.Generator{
-		CobraCmd: getTestCmd(),
+		CobraCmd: cmd,
 	}
 	var out bytes.Buffer
 	g.Generate(&out)
-	should, err := os.ReadFile("testfiles/testCmdSimple.json")
+	should, err := os.ReadFile(testFileName(testName))
 	if err != nil {
-		t.Fatalf("Cannot read test output: %v", err)
+		t.Errorf("Cannot read test output: %v", err)
 	}
 	outStr := out.String()
 	if string(should) != outStr {
 		fmt.Println(out.String())
-		of := "testfiles/ignore_test_output_testCmdSimple.json"
-		f, err := os.OpenFile(of, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+		f, err := os.OpenFile(shouldFileName(testName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 		if err != nil {
 			t.Errorf("Cannot open output file: %v", err)
 		}
@@ -82,7 +115,6 @@ func Test_Generate(t *testing.T) {
 		if _, err := f.WriteString(outStr); err != nil {
 			t.Errorf("Cannot write output file: %v", err)
 		}
-		t.Error("Output not identital")
+		t.Errorf("Output not identital.\nComape %s and %s", shouldFileName(testName), testFileName(testName))
 	}
-
 }
