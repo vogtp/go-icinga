@@ -87,12 +87,14 @@ func (g *Generator) generate() *Config {
 	g.cobraParams = g.cobraParams[1:]
 	srvID := fmt.Sprintf("%vtpl-service-%s", g.NamePrefix, g.id)
 	g.srvDef = service{
-		ObjectName:    srvID,
-		CheckCommand:  cmdID,
-		CheckInterval: 86400,
-		RetryInterval: 3600,
-		Notes:         g.Description,
-		NotesURL:      g.DescriptionURL,
+		ObjectName:          srvID,
+		CheckCommand:        cmdID,
+		CheckInterval:       86400,
+		RetryInterval:       3600,
+		Notes:               g.Description,
+		NotesURL:            g.DescriptionURL,
+		EnablePerfdata:      true,
+		EnableNotifications: true,
 		//IconImage: ,
 		Imports:    []string{"tpl-service-generic"},
 		ObjectType: "template",
