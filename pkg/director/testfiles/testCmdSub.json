@@ -3,17 +3,19 @@
     "cmd-check-testCmd-testSubCmd": {
       "arguments": {
         "--testFlagBoolSubCmd": {
+          "value": "$testCmd_testSubCmd_testFlagBoolSubCmd$",
           "set_if": "$testCmd_testSubCmd_testFlagBoolSubCmd$",
           "required": false,
           "skip_key": false
         },
         "--testFlagStringSubCmd": {
+          "value": "$testCmd_testSubCmd_testFlagStringSubCmd$",
           "set_if": "$testCmd_testSubCmd_testFlagStringSubCmd$",
           "required": false,
           "skip_key": false
         },
         "testSubCmd": {
-          "set_if": "$testCmd_testSubCmd_cmd_0$",
+          "value": "$testCmd_testSubCmd_cmd_0$",
           "required": true,
           "skip_key": true
         }
@@ -63,9 +65,9 @@
       "enable_active_checks": null,
       "enable_event_handler": null,
       "enable_flapping": null,
-      "enable_notifications": false,
+      "enable_notifications": true,
       "enable_passive_checks": null,
-      "enable_perfdata": false,
+      "enable_perfdata": true,
       "event_command": null,
       "fields": [],
       "flapping_threshold_high": null,
@@ -77,7 +79,7 @@
       "imports": [
         "tpl-service-generic"
       ],
-      "max_check_attempts": 0,
+      "max_check_attempts": 3,
       "notes": "Test Icinga Directory Bucket",
       "notes_url": "https://github.com/vogtp/go-icinga/",
       "object_name": "tpl-service-testCmd-testSubCmd",

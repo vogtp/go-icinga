@@ -20,7 +20,8 @@ type CommandDefinition struct {
 }
 
 type argument struct {
-	SetIf    string `json:"set_if"`
+	Value    string `json:"value"`
+	SetIf    string `json:"set_if,omitempty"`
 	Required bool   `json:"required"`
 	SkipKey  bool   `json:"skip_key"`
 }

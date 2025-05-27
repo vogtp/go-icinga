@@ -36,6 +36,7 @@ func (g *Generator) parsePFlags() {
 		fName := idPrintf("%s_%s", g.id, f.Name)
 		args[fmt.Sprintf("--%s", f.Name)] = argument{
 			SetIf: fmt.Sprintf("$%s$", fName),
+			Value: fmt.Sprintf("$%s$", fName),
 		}
 		datatype := "Icinga\\Module\\Director\\DataType\\DataTypeString"
 		if f.Value.Type() == "bool" {
@@ -58,7 +59,8 @@ func (g *Generator) parsePFlags() {
 	for i, cp := range g.cobraParams {
 		fName := idPrintf("%s_cmd_%v", g.id, i)
 		args[fmt.Sprintf("%s", cp)] = argument{
-			SetIf:    fmt.Sprintf("$%s$", fName),
+			//	SetIf:    fmt.Sprintf("$%s$", fName),
+			Value:    fmt.Sprintf("$%s$", fName),
 			Required: true,
 			SkipKey:  true,
 		}
