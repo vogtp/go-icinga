@@ -60,7 +60,7 @@ func (g *Generator) parsePFlags() {
 		args[fmt.Sprintf("%s", cp)] = argument{
 			SetIf:    fmt.Sprintf("$%s$", fName),
 			Required: true,
-			SkeyKey:  true,
+			SkipKey:  true,
 		}
 
 		datafields[fieldID] = datafield{

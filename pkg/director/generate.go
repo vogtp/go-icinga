@@ -95,6 +95,7 @@ func (g *Generator) generate() *Config {
 		NotesURL:            g.DescriptionURL,
 		EnablePerfdata:      true,
 		EnableNotifications: true,
+		MaxCheckAttempts:    3,
 		//IconImage: ,
 		Imports:    []string{"tpl-service-generic"},
 		ObjectType: "template",

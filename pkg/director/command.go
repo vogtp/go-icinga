@@ -22,7 +22,7 @@ type CommandDefinition struct {
 type argument struct {
 	SetIf    string `json:"set_if"`
 	Required bool   `json:"required"`
-	SkeyKey  bool   `json:"skip_key"`
+	SkipKey  bool   `json:"skip_key"`
 }
 
 type cmdField struct {
