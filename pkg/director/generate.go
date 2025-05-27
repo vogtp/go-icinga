@@ -11,13 +11,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Generator for icinga directory basket config files
+// CobraCmd is mandatory and all the config will be genertated from it
 type Generator struct {
-	NamePrefix     string
-	name           string
-	CobraCmd       *cobra.Command
-	Description    string
-	DescriptionURL string
+	NamePrefix     string         // NamePrefix is a optional prefix for the icinga names
+	CobraCmd       *cobra.Command // CobraCmd is mandatory and all the config will be genertated from it
+	Description    string         // Description (optional) is the icinga Notes field
+	DescriptionURL string         // DescriptionURL (optional) is the icinga NotesURL field
 
+	name        string
 	id          string
 	cobraParams []string
 	srvDef      service
@@ -25,6 +27,7 @@ type Generator struct {
 	c           *Config
 }
 
+// Generate writes the icinga basket config to the passed writer
 func (g *Generator) Generate(w io.Writer) {
 	g.cobraParams = getCobraParams(g.CobraCmd)
 	g.name = strings.Join(g.cobraParams, " ")

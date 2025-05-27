@@ -10,13 +10,15 @@ import (
 )
 
 const (
-	GenerateFlagName = "icinga.director"
+	GenerateFlagName = "icinga.director" // GenerateFlagName is the name of the flag used to trigger gerneration
 )
 
+// GenerateDirectorConfigPFlag adds a pflag for gerneration to the FlagSet
 func GenerateDirectorConfigPFlag(s *pflag.FlagSet) {
 	s.Bool(GenerateFlagName, false, "Generate a icinga director config")
 }
 
+// ShouldGenerate checks the flag if generation should be triggered
 func ShouldGenerate() bool {
 	b := viper.GetBool(GenerateFlagName)
 	return b
