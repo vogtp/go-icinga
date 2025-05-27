@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/vogtp/go-icinga/pkg/checks"
 )
 
 // Generator for icinga directory basket config files
@@ -17,6 +18,7 @@ type Generator struct {
 	CobraCmd       *cobra.Command // CobraCmd is mandatory and all the config will be genertated from it
 	Description    string         // Description (optional) is the icinga Notes field
 	DescriptionURL string         // DescriptionURL (optional) is the icinga NotesURL field
+	Output         io.Writer      // Output is a io.Writer where the string output is written to
 
 	name        string
 	id          string
@@ -27,19 +29,29 @@ type Generator struct {
 }
 
 // Generate writes the icinga basket config to the passed writer
-func (g *Generator) Generate(w io.Writer) {
+func (g *Generator) Generate() {
 	g.cobraParams = getCobraParams(g.CobraCmd)
 	g.name = strings.Join(g.cobraParams, " ")
 	g.id = strings.Join(g.cobraParams, "-")
 	if len(g.NamePrefix) > 0 && !strings.HasSuffix(g.NamePrefix, "-") {
 		g.NamePrefix = fmt.Sprintf("%v-", g.NamePrefix)
 	}
+	c := g.generate()
+
+	if g.Output != nil {
+		if err := prettyPrint(c, g.Output); err != nil {
+			slog.Warn("Cannot write config", "err", err)
+		}
+	}
+}
+
+func prettyPrint(c *Config, w io.Writer) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
-	c := g.generate()
 	if err := enc.Encode(&c); err != nil {
-		slog.Error("Cannot encode", "err", err)
+		return fmt.Errorf("cannot encode config: %w", err)
 	}
+	return nil
 }
 
 func (g *Generator) generate() *Config {
@@ -49,7 +61,7 @@ func (g *Generator) generate() *Config {
 	}
 	cmdID := fmt.Sprintf("%vcmd-check-%s", g.NamePrefix, g.id)
 	g.cmdDef = CommandDefinition{
-		Command:        fmt.Sprintf("/usr/lib64/nagios/plugins/%s", g.cobraParams[0]),
+		Command:        fmt.Sprintf("%s%s", checks.PluginDir, g.cobraParams[0]),
 		Imports:        make([]interface{}, 0),
 		MethodsExecute: "PluginCheck",
 		ObjectName:     cmdID,

@@ -21,7 +21,8 @@ func cmpGenerate(t *testing.T, testName string, cmd *cobra.Command) {
 		DescriptionURL: "https://github.com/vogtp/go-icinga/",
 	}
 	var out bytes.Buffer
-	g.Generate(&out)
+	g.Output = &out
+	g.Generate()
 	should, err := os.ReadFile(testFileName(testName))
 	if err != nil {
 		t.Errorf("Cannot read test output: %v", err)
@@ -48,8 +49,9 @@ func getTestCmd() *cobra.Command {
 			if director.ShouldGenerate() {
 				d := director.Generator{
 					CobraCmd: cmd,
+					Output:   os.Stdout,
 				}
-				d.Generate(os.Stdout)
+				d.Generate()
 				os.Exit(0)
 			}
 		},
