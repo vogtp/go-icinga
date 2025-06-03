@@ -20,10 +20,10 @@ type CommandDefinition struct {
 }
 
 type argument struct {
-	Value    string `json:"value"`
-	SetIf    string `json:"set_if,omitempty"`
-	Required bool   `json:"required"`
-	SkipKey  bool   `json:"skip_key"`
+	Value string `json:"value"`
+	// SetIf    string `json:"set_if,omitempty"`  DO NOT USE: it breaks the parameter parsing
+	Required bool `json:"required"`
+	SkipKey  bool `json:"skip_key"`
 }
 
 type cmdField struct {

@@ -35,7 +35,6 @@ func (g *Generator) parsePFlags() {
 		}
 		fName := idPrintf("%s_%s", g.id, f.Name)
 		args[fmt.Sprintf("--%s", f.Name)] = argument{
-			SetIf: fmt.Sprintf("$%s$", fName),
 			Value: fmt.Sprintf("$%s$", fName),
 		}
 		datatype := "Icinga\\Module\\Director\\DataType\\DataTypeString"
