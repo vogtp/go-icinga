@@ -15,6 +15,11 @@ import (
 	"github.com/vogtp/go-icinga/pkg/icingacli"
 )
 
+var (
+	// CommandEndpoint has to be set to the fqdn of the director
+	CommandEndpoint = "example.com"
+)
+
 // Generator for icinga directory basket config files
 // CobraCmd is mandatory and all the config will be genertated from it
 type Generator struct {
@@ -93,7 +98,7 @@ func (g *Generator) generate() *Config {
 		RetryInterval:       60,
 		Notes:               g.Description,
 		NotesURL:            g.DescriptionURL,
-		CommandEndpoint:     "localhost",
+		CommandEndpoint:     CommandEndpoint, //FIXME make generic
 		EnablePerfdata:      true,
 		EnableNotifications: true,
 		MaxCheckAttempts:    3,

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/vogtp/go-icinga/pkg/icinga"
 )
@@ -13,36 +12,45 @@ type Result struct {
 	Name   string
 	Prefix string
 
-	Total  time.Duration
-	Timing map[string]time.Duration
-	Stati  map[string]any
+	Total   any
+	Counter map[string]any
+	Stati   map[string]any
+
+	CounterFormater func(name string, value any) string
 
 	Err    error
 	Result icinga.Result
 }
 
 func (r Result) PrintExit() {
-	if !strings.HasSuffix(r.Prefix, ".") {
+	if r.CounterFormater == nil {
+		r.CounterFormater = func(name string, value any) string { return fmt.Sprintf("%v", value) }
+	}
+	if len(r.Prefix) > 0 && !strings.HasSuffix(r.Prefix, ".") {
 		r.Prefix = fmt.Sprintf("%s.", r.Prefix)
 	}
 	ret := fmt.Sprintf("%s %s", strings.ToUpper(r.Name), r.Result.String())
-	if r.Total > 0 {
-		ret = fmt.Sprintf("%s - duration %vµs", ret, r.Total.Microseconds())
+	if r.Total != nil {
+		ret = fmt.Sprintf("%s - total %v", ret, r.CounterFormater("total", r.Total))
 	}
 	if r.Err != nil {
 		ret = fmt.Sprintf("%s - Error: %v", ret, r.Err.Error())
 	}
 	pref := ""
 	disp := ""
-	for n, t := range r.Timing {
+	for n, c := range r.Counter {
 		//	pref = fmt.Sprintf("%s%s_ms=%v ", pref, n, t.Milliseconds())
-		pref = fmt.Sprintf("%s%s%s=%vµs ", pref, r.Prefix, n, t.Microseconds())
-		disp = fmt.Sprintf("%s%s\t%vµs\n", disp, n, t.Microseconds())
+		pref = fmt.Sprintf("%s%s%s=%v ", pref, r.Prefix, n, r.CounterFormater(n, c))
+		disp = fmt.Sprintf("%s%s\t%v\n", disp, n, r.CounterFormater(n, c))
 	}
 	for n, s := range r.Stati {
 		disp = fmt.Sprintf("%s%s: %s\n", disp, n, s)
 	}
-	// disp = fmt.Sprintf("%s%s\t%vms", disp, "total", total)
+
+	if logBuffer.Len() > 0 {
+		disp = fmt.Sprintf("%s\nLog:\n%s\n", disp, logBuffer.String())
+	}
+
 	fmt.Printf("%s\n\n%s | %s", ret, disp, pref)
 	if r.Result > icinga.OK {
 		os.Exit(int(r.Result))
