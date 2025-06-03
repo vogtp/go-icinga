@@ -47,8 +47,8 @@ func (r Result) PrintExit() {
 		disp = fmt.Sprintf("%s%s: %s\n", disp, n, s)
 	}
 
-	if logBuffer.Len() > 0 {
-		disp = fmt.Sprintf("%s\nLog:\n%s\n", disp, logBuffer.String())
+	if LogBuffer.Len() > 0 {
+		disp = fmt.Sprintf("%s\nLog:\n%s\n", disp, LogBuffer.String())
 	}
 
 	fmt.Printf("%s\n\n%s | %s", ret, disp, pref)
