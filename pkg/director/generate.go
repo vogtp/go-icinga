@@ -93,6 +93,7 @@ func (g *Generator) generate() *Config {
 		RetryInterval:       60,
 		Notes:               g.Description,
 		NotesURL:            g.DescriptionURL,
+		CommandEndpoint:     "localhost",
 		EnablePerfdata:      true,
 		EnableNotifications: true,
 		MaxCheckAttempts:    3,
