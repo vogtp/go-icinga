@@ -48,7 +48,13 @@ func (g *Generator) parsePFlags() {
 			Datatype:    datatype,
 			UUID:        GenerateUUID(),
 		}
-		g.srvDef.Vars[fName] = f.DefValue
+		defVal := f.DefValue
+		if strings.HasSuffix(f.Value.Type(), "Slice") {
+			defVal = strings.ReplaceAll(defVal, "[", "")
+			defVal = strings.ReplaceAll(defVal, "]", "")
+			defVal = strings.ReplaceAll(defVal, ", ", ",")
+		}
+		g.srvDef.Vars[fName] = defVal
 		cmdFields = append(cmdFields, cmdField{
 			DatafieldID: fieldID,
 			IsRequired:  "n",
