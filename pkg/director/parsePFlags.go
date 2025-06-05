@@ -61,6 +61,7 @@ func (g *Generator) parsePFlags() {
 		})
 		fieldID++
 	})
+	order := 1
 	for i, cp := range g.cobraParams {
 		fName := idPrintf("%s_cmd_%v", g.id, i)
 		args[cp] = argument{
@@ -68,7 +69,9 @@ func (g *Generator) parsePFlags() {
 			Value:    fmt.Sprintf("$%s$", fName),
 			Required: true,
 			SkipKey:  true,
+			Order:    order,
 		}
+		order++
 
 		datafields[fieldID] = datafield{
 			Varname:  fName,
@@ -79,7 +82,8 @@ func (g *Generator) parsePFlags() {
 		g.srvDef.Vars[fName] = cp
 		cmdFields = append(cmdFields, cmdField{
 			DatafieldID: fieldID,
-			IsRequired:  "y",
+
+			IsRequired: "y",
 		})
 		fieldID++
 	}

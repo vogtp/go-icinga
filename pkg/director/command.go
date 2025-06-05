@@ -24,6 +24,7 @@ type argument struct {
 	// SetIf    string `json:"set_if,omitempty"`  DO NOT USE: it breaks the parameter parsing
 	Required bool `json:"required"`
 	SkipKey  bool `json:"skip_key"`
+	Order    int  `json:"order"`
 }
 
 type cmdField struct {
