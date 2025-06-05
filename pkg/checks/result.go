@@ -30,7 +30,7 @@ func (r Result) PrintExit() {
 	if len(r.Prefix) > 0 && !strings.HasSuffix(r.Prefix, ".") {
 		r.Prefix = fmt.Sprintf("%s.", r.Prefix)
 	}
-	ret := fmt.Sprintf("%s - %s", r.Name, r.Result.String())
+	ret := fmt.Sprintf("%s", r.Result.String())
 	if r.Total != nil {
 		ret = fmt.Sprintf("%s - total %v", ret, r.CounterFormater("total", r.Total))
 	}
