@@ -19,8 +19,8 @@ type Result struct {
 	CounterFormater        func(name string, value any) string
 	DisplayCounterFormater func(Counter map[string]any) string
 
-	Err    error
-	Result icinga.Result
+	Err  error
+	code icinga.ResultCode
 }
 
 func (r Result) PrintExit() {
@@ -30,7 +30,7 @@ func (r Result) PrintExit() {
 	if len(r.Prefix) > 0 && !strings.HasSuffix(r.Prefix, ".") {
 		r.Prefix = fmt.Sprintf("%s.", r.Prefix)
 	}
-	ret := fmt.Sprintf("%s", r.Result.String())
+	ret := fmt.Sprintf("%s", r.code.String())
 	if r.Total != nil {
 		ret = fmt.Sprintf("%s - total %v", ret, r.CounterFormater("total", r.Total))
 	}
@@ -56,7 +56,11 @@ func (r Result) PrintExit() {
 	}
 
 	fmt.Printf("%s\n\n%s | %s", ret, disp, pref)
-	if r.Result > icinga.OK {
-		os.Exit(int(r.Result))
+	if r.code > icinga.OK {
+		os.Exit(int(r.code))
 	}
+}
+
+func (r *Result) SetCode(c icinga.ResultCode) {
+	r.code = max(r.code, c)
 }
