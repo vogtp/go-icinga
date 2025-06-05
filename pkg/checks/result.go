@@ -17,7 +17,7 @@ type Result struct {
 	name   string
 	prefix string
 
-	Total   any
+	header  string
 	counter []keyValue
 	stati   []keyValue
 
@@ -49,12 +49,12 @@ func (r *Result) PrintExit() {
 	var ret strings.Builder
 	var disp strings.Builder
 	var pref strings.Builder
-	ret.WriteString(fmt.Sprintf("[%s]", r.code.String()))
-	if r.Total != nil {
-		fmt.Fprintf(&ret, " - total %v", r.counterFormater("total", r.Total))
-	}
+	ret.WriteString(r.header)
 	if r.err != nil {
-		fmt.Fprintf(&ret, " - Error: %v", r.err.Error())
+		if ret.Len() > 0 {
+			ret.WriteString(" - ")
+		}
+		fmt.Fprintf(&ret, "Error: %v", r.err.Error())
 	}
 	for _, c := range r.counter {
 		//	pref = fmt.Sprintf("%s%s_ms=%v ", pref, n, t.Milliseconds())
@@ -82,6 +82,10 @@ func (r *Result) PrintExit() {
 	if r.code > icinga.OK {
 		os.Exit(int(r.code))
 	}
+}
+
+func (r *Result) SetHeader(h string) {
+	r.header = h
 }
 
 func (r *Result) SetCode(c icinga.ResultCode) {
