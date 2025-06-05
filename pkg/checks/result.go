@@ -68,6 +68,7 @@ func (r *Result) PrintExit() {
 		disp.Reset()
 		disp.WriteString(r.displayFormater(ctr))
 	}
+	disp.WriteString("\n")
 	for _, s := range r.stati {
 		fmt.Fprintf(&disp, "%s: %s\n", s.name, s.value)
 	}
