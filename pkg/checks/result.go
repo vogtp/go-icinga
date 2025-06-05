@@ -8,13 +8,18 @@ import (
 	"github.com/vogtp/go-icinga/pkg/icinga"
 )
 
+type keyValue struct {
+	name  string
+	value any
+}
+
 type Result struct {
 	name   string
 	prefix string
 
 	Total   any
-	counter map[string]any
-	stati   map[string]any
+	counter []keyValue
+	stati   []keyValue
 
 	counterFormater func(name string, value any) string
 	displayFormater func(counter map[string]any) string
@@ -26,8 +31,8 @@ type Result struct {
 func NewCheckResult(name string, options ...CheckResultOption) *Result {
 	r := &Result{
 		name:            name,
-		stati:           make(map[string]any),
-		counter:         make(map[string]any),
+		stati:           make([]keyValue, 0),
+		counter:         make([]keyValue, 0),
 		counterFormater: func(name string, value any) string { return fmt.Sprintf("%v", value) },
 	}
 	for _, o := range options {
@@ -36,36 +41,42 @@ func NewCheckResult(name string, options ...CheckResultOption) *Result {
 	return r
 }
 
-func (r Result) PrintExit() {
+func (r *Result) PrintExit() {
 	if len(r.prefix) > 0 && !strings.HasSuffix(r.prefix, ".") {
 		r.prefix = fmt.Sprintf("%s.", r.prefix)
 	}
-	ret := r.code.String()
+	var ret strings.Builder
+	var disp strings.Builder
+	var pref strings.Builder
+	ret.WriteString(r.code.String())
 	if r.Total != nil {
-		ret = fmt.Sprintf("%s - total %v", ret, r.counterFormater("total", r.Total))
+		fmt.Fprintf(&ret, " - total %v", r.counterFormater("total", r.Total))
 	}
 	if r.err != nil {
-		ret = fmt.Sprintf("%s - Error: %v", ret, r.err.Error())
+		fmt.Fprintf(&ret, " - Error: %v", r.err.Error())
 	}
-	pref := ""
-	disp := ""
-	for n, c := range r.counter {
+	for _, c := range r.counter {
 		//	pref = fmt.Sprintf("%s%s_ms=%v ", pref, n, t.Milliseconds())
-		pref = fmt.Sprintf("%s%s%s=%v ", pref, r.prefix, n, r.counterFormater(n, c))
-		disp = fmt.Sprintf("%s%s\t%v\n", disp, n, r.counterFormater(n, c))
+		fmt.Fprintf(&pref, "%s%s=%v ", r.prefix, c.name, r.counterFormater(c.name, c.value))
+		fmt.Fprintf(&disp, "%s\t%v\n", c.name, r.counterFormater(c.name, c.value))
 	}
 	if r.displayFormater != nil {
-		disp = r.displayFormater(r.counter)
+		ctr := make(map[string]any, len(r.counter))
+		for _, c := range r.counter {
+			ctr[c.name] = c.value
+		}
+		disp.Reset()
+		disp.WriteString(r.displayFormater(ctr))
 	}
-	for n, s := range r.stati {
-		disp = fmt.Sprintf("%s%s: %s\n", disp, n, s)
+	for _, s := range r.stati {
+		fmt.Fprintf(&disp, "%s: %s\n", s.name, s.value)
 	}
 
 	if LogBuffer.Len() > 0 {
-		disp = fmt.Sprintf("%s\nLog:\n%s\n", disp, LogBuffer.String())
+		fmt.Fprintf(&disp, "\nLog:\n%s\n", LogBuffer.String())
 	}
 
-	fmt.Printf("%s\n\n%s | %s", ret, disp, pref)
+	fmt.Printf("%s\n\n%s|%s", ret.String(), disp.String(), pref.String())
 	if r.code > icinga.OK {
 		os.Exit(int(r.code))
 	}
@@ -76,14 +87,14 @@ func (r *Result) SetCode(c icinga.ResultCode) {
 }
 
 func (r *Result) SetCounter(name string, val any) {
-	r.counter[name] = val
+	r.counter = append(r.counter, keyValue{name: name, value: val})
 }
 
 func (r *Result) SetStatus(name string, val any) {
-	r.stati[name] = val
+	r.stati = append(r.stati, keyValue{name: name, value: val})
 }
 
-func (r *Result)SetError(err error){
+func (r *Result) SetError(err error) {
 	r.err = err
 	r.SetCode(icinga.WARNING)
 }
