@@ -9,45 +9,55 @@ import (
 )
 
 type Result struct {
-	Name   string
-	Prefix string
+	name   string
+	prefix string
 
 	Total   any
-	Counter map[string]any
-	Stati   map[string]any
+	counter map[string]any
+	stati   map[string]any
 
-	CounterFormater        func(name string, value any) string
-	DisplayCounterFormater func(Counter map[string]any) string
+	counterFormater func(name string, value any) string
+	displayFormater func(counter map[string]any) string
 
-	Err  error
+	err  error
 	code icinga.ResultCode
 }
 
+func NewCheckResult(name string, options ...CheckResultOption) *Result {
+	r := &Result{
+		name:            name,
+		stati:           make(map[string]any),
+		counter:         make(map[string]any),
+		counterFormater: func(name string, value any) string { return fmt.Sprintf("%v", value) },
+	}
+	for _, o := range options {
+		o(r)
+	}
+	return r
+}
+
 func (r Result) PrintExit() {
-	if r.CounterFormater == nil {
-		r.CounterFormater = func(name string, value any) string { return fmt.Sprintf("%v", value) }
+	if len(r.prefix) > 0 && !strings.HasSuffix(r.prefix, ".") {
+		r.prefix = fmt.Sprintf("%s.", r.prefix)
 	}
-	if len(r.Prefix) > 0 && !strings.HasSuffix(r.Prefix, ".") {
-		r.Prefix = fmt.Sprintf("%s.", r.Prefix)
-	}
-	ret := fmt.Sprintf("%s", r.code.String())
+	ret := r.code.String()
 	if r.Total != nil {
-		ret = fmt.Sprintf("%s - total %v", ret, r.CounterFormater("total", r.Total))
+		ret = fmt.Sprintf("%s - total %v", ret, r.counterFormater("total", r.Total))
 	}
-	if r.Err != nil {
-		ret = fmt.Sprintf("%s - Error: %v", ret, r.Err.Error())
+	if r.err != nil {
+		ret = fmt.Sprintf("%s - Error: %v", ret, r.err.Error())
 	}
 	pref := ""
 	disp := ""
-	for n, c := range r.Counter {
+	for n, c := range r.counter {
 		//	pref = fmt.Sprintf("%s%s_ms=%v ", pref, n, t.Milliseconds())
-		pref = fmt.Sprintf("%s%s%s=%v ", pref, r.Prefix, n, r.CounterFormater(n, c))
-		disp = fmt.Sprintf("%s%s\t%v\n", disp, n, r.CounterFormater(n, c))
+		pref = fmt.Sprintf("%s%s%s=%v ", pref, r.prefix, n, r.counterFormater(n, c))
+		disp = fmt.Sprintf("%s%s\t%v\n", disp, n, r.counterFormater(n, c))
 	}
-	if r.DisplayCounterFormater != nil {
-		disp = r.DisplayCounterFormater(r.Counter)
+	if r.displayFormater != nil {
+		disp = r.displayFormater(r.counter)
 	}
-	for n, s := range r.Stati {
+	for n, s := range r.stati {
 		disp = fmt.Sprintf("%s%s: %s\n", disp, n, s)
 	}
 
@@ -63,4 +73,17 @@ func (r Result) PrintExit() {
 
 func (r *Result) SetCode(c icinga.ResultCode) {
 	r.code = max(r.code, c)
+}
+
+func (r *Result) SetCounter(name string, val any) {
+	r.counter[name] = val
+}
+
+func (r *Result) SetStatus(name string, val any) {
+	r.stati[name] = val
+}
+
+func (r *Result)SetError(err error){
+	r.err = err
+	r.SetCode(icinga.WARNING)
 }
