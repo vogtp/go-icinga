@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-var LogBuffer strings.Builder
+var logBuffer strings.Builder
 
-func InitLog() *slog.Logger {
+func initLog() *slog.Logger {
 	logOpts := slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}
-	handler := slog.NewTextHandler(&LogBuffer, &logOpts)
+	handler := slog.NewTextHandler(&logBuffer, &logOpts)
 	l := slog.New(handler)
 	slog.SetDefault(l)
 	return l

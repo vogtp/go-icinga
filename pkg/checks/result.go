@@ -38,6 +38,7 @@ func NewCheckResult(name string, options ...CheckResultOption) *Result {
 	for _, o := range options {
 		o(r)
 	}
+	initLog()
 	return r
 }
 
@@ -48,7 +49,7 @@ func (r *Result) PrintExit() {
 	var ret strings.Builder
 	var disp strings.Builder
 	var pref strings.Builder
-	ret.WriteString(r.code.String())
+	ret.WriteString(fmt.Sprintf("[%s]", r.code.String()))
 	if r.Total != nil {
 		fmt.Fprintf(&ret, " - total %v", r.counterFormater("total", r.Total))
 	}
@@ -73,8 +74,8 @@ func (r *Result) PrintExit() {
 		fmt.Fprintf(&disp, "%s: %s\n", s.name, s.value)
 	}
 
-	if LogBuffer.Len() > 0 {
-		fmt.Fprintf(&disp, "\nLog:\n%s\n", LogBuffer.String())
+	if logBuffer.Len() > 0 {
+		fmt.Fprintf(&disp, "\nLog:\n%s\n", logBuffer.String())
 	}
 
 	fmt.Printf("%s\n\n%s|%s", ret.String(), disp.String(), pref.String())
