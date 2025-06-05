@@ -7,7 +7,7 @@ import (
 
 var LogBuffer strings.Builder
 
-func initLog() *slog.Logger {
+func InitLog() *slog.Logger {
 	logOpts := slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}
