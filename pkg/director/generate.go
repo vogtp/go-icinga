@@ -15,11 +15,6 @@ import (
 	"github.com/vogtp/go-icinga/pkg/icingacli"
 )
 
-var (
-	// CommandEndpoint has to be set to the fqdn of the director
-	CommandEndpoint = "example.com"
-)
-
 // Generator for icinga directory basket config files
 // CobraCmd is mandatory and all the config will be genertated from it
 type Generator struct {
@@ -92,13 +87,14 @@ func (g *Generator) generate() *Config {
 	g.cobraParams = g.cobraParams[1:]
 	srvID := fmt.Sprintf("%vtpl-service-%s", g.NamePrefix, g.id)
 	g.srvDef = service{
-		ObjectName:          srvID,
-		CheckCommand:        cmdID,
-		CheckInterval:       300,
-		RetryInterval:       60,
-		Notes:               g.Description,
-		NotesURL:            g.DescriptionURL,
-		CommandEndpoint:     CommandEndpoint, //FIXME make generic
+		ObjectName:    srvID,
+		CheckCommand:  cmdID,
+		CheckInterval: 300,
+		RetryInterval: 60,
+		Notes:         g.Description,
+		NotesURL:      g.DescriptionURL,
+		//CommandEndpoint:     CommandEndpoint, //FIXME make generic
+		UseAgent:            false,
 		EnablePerfdata:      true,
 		EnableNotifications: true,
 		MaxCheckAttempts:    3,

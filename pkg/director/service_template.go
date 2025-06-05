@@ -36,7 +36,7 @@ type service struct {
 	RetryInterval         int            `json:"retry_interval"`
 	ServiceSet            interface{}    `json:"service_set"`
 	TemplateChoice        interface{}    `json:"template_choice"`
-	UseAgent              interface{}    `json:"use_agent"`
+	UseAgent              bool           `json:"use_agent"`
 	UseVarOverrides       interface{}    `json:"use_var_overrides"`
 	Vars                  map[string]any `json:"vars"`
 	Volatile              interface{}    `json:"volatile"`
