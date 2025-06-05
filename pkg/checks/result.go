@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/vogtp/go-icinga/pkg/icinga"
 )
 
@@ -38,7 +40,7 @@ func NewCheckResult(name string, options ...CheckResultOption) *Result {
 	for _, o := range options {
 		o(r)
 	}
-	initLog()
+	InitLog()
 	return r
 }
 
@@ -56,11 +58,20 @@ func (r *Result) PrintExit() {
 		}
 		fmt.Fprintf(&ret, "Error: %v", r.err.Error())
 	}
+	tw := table.NewWriter()
+	style := table.StyleLight
+	style.HTML.EscapeText = true
+	tw.SetStyle(style)
 	for _, c := range r.counter {
 		//	pref = fmt.Sprintf("%s%s_ms=%v ", pref, n, t.Milliseconds())
 		fmt.Fprintf(&pref, "%s%s=%v ", r.prefix, c.name, r.counterFormater(c.name, c.value))
-		fmt.Fprintf(&disp, "%s\t%v\n", c.name, r.counterFormater(c.name, c.value))
+		//fmt.Fprintf(&disp, "%s\t%v\n", c.name, r.counterFormater(c.name, c.value))
+		tw.AppendRow(table.Row{c.name, r.counterFormater(c.name, c.value)})
 	}
+	tw.SetColumnConfigs([]table.ColumnConfig{
+		{Number: 2, Align: text.AlignRight},
+	})
+	disp.WriteString(tw.Render())
 	if r.displayFormater != nil {
 		ctr := make(map[string]any, len(r.counter))
 		for _, c := range r.counter {
@@ -70,9 +81,13 @@ func (r *Result) PrintExit() {
 		disp.WriteString(r.displayFormater(ctr))
 	}
 	disp.WriteString("\n")
+	tw = table.NewWriter()
+	tw.SetStyle(style)
 	for _, s := range r.stati {
-		fmt.Fprintf(&disp, "%s: %s\n", s.name, s.value)
+		//fmt.Fprintf(&disp, "%s: %s\n", s.name, s.value)
+		tw.AppendRow(table.Row{s.name, s.value})
 	}
+	disp.WriteString(tw.Render())
 
 	if LogBuffer.Len() > 0 {
 		fmt.Fprintf(&disp, "\nLog:\n%s\n", LogBuffer.String())
@@ -84,8 +99,8 @@ func (r *Result) PrintExit() {
 	}
 }
 
-func (r *Result) SetHeader(h string) {
-	r.header = h
+func (r *Result) SetHeader(format string, a ...any) {
+	r.header = fmt.Sprintf(format, a...)
 }
 
 func (r *Result) SetCode(c icinga.ResultCode) {
