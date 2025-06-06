@@ -63,7 +63,7 @@ func getTestCmd() *cobra.Command {
 	}
 	testCmd.Flags().Bool("testFlagBool", false, "A boolean test flag")
 	testCmd.Flags().String("testFlagString", "", "A string test flag")
-	director.GenerateDirectorConfigPFlag(testCmd.Flags())
+	director.Flags(testCmd.Flags())
 	testCmd.Flags().VisitAll(func(f *pflag.Flag) {
 		if err := viper.BindPFlag(f.Name, f); err != nil {
 			panic(err)

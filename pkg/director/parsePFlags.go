@@ -13,8 +13,8 @@ const (
 	ImportConfigFlagName = "icinga.director.import" // ImportFlagName run icinga cli director basket restore
 )
 
-// GenerateDirectorConfigPFlag adds a pflag for gerneration to the FlagSet
-func GenerateDirectorConfigPFlag(s *pflag.FlagSet) {
+// Flags adds a pflag for gerneration to the FlagSet
+func Flags(s *pflag.FlagSet) {
 	s.Bool(WriteConfigFlagName, false, "Generate a icinga director config and write it out")
 	s.Bool(ImportConfigFlagName, false, "Generate a icinga director config and run icinga cli director basket restore")
 }
