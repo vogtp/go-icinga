@@ -16,7 +16,7 @@ type CommandDefinition struct {
 	Vars           struct {
 	} `json:"vars"`
 	Zone interface{} `json:"zone"`
-	UUID string      `json:"uuid"`
+	UUID string      `json:"uuid,omitempty"`
 }
 
 type argument struct {

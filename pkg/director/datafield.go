@@ -8,5 +8,5 @@ type datafield struct {
 	Format      interface{} `json:"format"`
 	Settings    struct {
 	} `json:"settings"`
-	UUID string `json:"uuid"`
+	UUID string `json:"uuid,omitempty"`
 }
