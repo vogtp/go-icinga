@@ -1,4 +1,4 @@
-package checks
+package check
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ type Result struct {
 	code icinga.ResultCode
 }
 
-func NewCheckResult(name string, options ...CheckResultOption) *Result {
+func NewResult(name string, options ...CheckResultOption) *Result {
 	r := &Result{
 		name:            name,
 		stati:           make([]keyValue, 0),
