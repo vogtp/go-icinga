@@ -18,23 +18,28 @@ import (
 
 type Command struct {
 	*cobra.Command
-	Use            string
-	Short          string
-	NamePrefix     string
-	DescriptionURL string
-	Criticality    icinga.Criticality
+	Use             string
+	Short           string
+	NamePrefix      string // director prefix
+	DescriptionURL  string // URL for diectory config
+	Criticality     icinga.Criticality
+	DefaultRemoteOn bool // should we run on the remote host by default
 
 	preRun func(cmd *cobra.Command, args []string) error
 }
 
 func (c *Command) Execute() error {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	return c.ExecuteContext(context.Background())
+}
+
+func (c *Command) ExecuteContext(ctx context.Context) error {
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer stop()
 
 	c.init()
 
 	flags := c.PersistentFlags()
-	ssh.Flags(flags)
+	ssh.Flags(flags, c.DefaultRemoteOn)
 	director.Flags(flags)
 	flags.VisitAll(func(f *pflag.Flag) {
 		if err := viper.BindPFlag(f.Name, f); err != nil {
@@ -50,7 +55,7 @@ func (c *Command) Execute() error {
 				return err
 			}
 		}
-		if err := c.generateDirectorConfig(args); err != nil {
+		if err := c.generateDirectorConfig(cmd, args); err != nil {
 			return err
 		}
 		//	fmt.Printf("ssh key: %s\n", viper.GetString("remote.sshkey"))
@@ -67,7 +72,7 @@ func (c *Command) Execute() error {
 		}
 	}
 
-	return c.ExecuteContext(ctx)
+	return c.Command.ExecuteContext(ctx)
 }
 
 // AddCommand adds one or more commands to this parent command.
@@ -76,13 +81,13 @@ func (c *Command) AddCommand(cmds ...*cobra.Command) {
 	c.Command.AddCommand(cmds...)
 }
 
-func (c *Command) generateDirectorConfig(args []string) error {
+func (c *Command) generateDirectorConfig(cmd *cobra.Command, args []string) error {
 	if director.ShouldGenerate() {
 		d := director.Generator{
 			NamePrefix:     c.NamePrefix,
 			Description:    c.Use,
 			DescriptionURL: c.DescriptionURL,
-			CobraCmd:       c.Command,
+			CobraCmd:       cmd,
 			Output:         os.Stdout,
 			Criticality:    c.Criticality,
 		}
@@ -98,9 +103,9 @@ func (c *Command) generateDirectorConfig(args []string) error {
 }
 func (c *Command) init() {
 	if c.Command == nil {
-		c.Command = &cobra.Command{
-			Use:   c.Use,
-			Short: c.Short,
-		}
+		c.Command = &cobra.Command{}
 	}
+	// wirte those values too if the command was generated
+	c.Command.Use = c.Use
+	c.Command.Short = c.Short
 }

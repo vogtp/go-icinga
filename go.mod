@@ -4,6 +4,7 @@ go 1.24.2
 
 require (
 	github.com/bramvdbogaerde/go-scp v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/jedib0t/go-pretty/v6 v6.6.7
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6

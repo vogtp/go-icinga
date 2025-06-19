@@ -1,6 +1,8 @@
 package ssh
 
 import (
+	"log/slog"
+
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/vogtp/go-icinga/pkg/director"
@@ -17,12 +19,19 @@ const (
 	isRemoteRun       = "remote.is_remote"
 )
 
-func Flags(flags *pflag.FlagSet) {
-	flags.String(remoteHost, remoteHostDefault, "Remote host to run the command on")
+func Flags(flags *pflag.FlagSet, defaultRemoteOn bool) {
+	h := ""
+	if defaultRemoteOn {
+		h = remoteHostDefault
+	}
+	flags.String(remoteHost, h, "Remote host to run the command on")
 	flags.String(remoteUser, "root", "Remote user name")
 	flags.String(remoteUserKey, "/var/lib/nagios/.ssh/icinga_ssh", "ssh private key file location")
 	flags.String(remoteUserKeyPass, "", "ssh private key password")
 	flags.Bool(isRemoteRun, false, "Internal to indicate a remote run")
+	if err := flags.MarkHidden(isRemoteRun); err != nil {
+		slog.Warn("Cannot hide flag", "flag", isRemoteRun)
+	}
 	director.IgnoreFlag(isRemoteRun)
 }
 
