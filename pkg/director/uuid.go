@@ -1,5 +1,6 @@
 package director
 
-import "github.com/google/uuid"
-
-var GenerateUUID = uuid.NewString
+var GenerateUUID = func() string {
+	//return uuid.NewString()
+	return ""
+}

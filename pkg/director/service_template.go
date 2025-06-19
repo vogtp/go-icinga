@@ -41,5 +41,5 @@ type service struct {
 	Vars                  map[string]any `json:"vars"`
 	Volatile              interface{}    `json:"volatile"`
 	Zone                  interface{}    `json:"zone"`
-	UUID                  string         `json:"uuid"`
+	UUID                  string         `json:"uuid,omitempty"`
 }

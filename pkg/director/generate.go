@@ -10,7 +10,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/vogtp/go-icinga/pkg/checks"
 	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/icingacli"
 )
@@ -76,7 +75,7 @@ func (g *Generator) generate() *Config {
 	}
 	cmdID := fmt.Sprintf("%vcmd-check-%s", g.NamePrefix, g.id)
 	g.cmdDef = CommandDefinition{
-		Command:        fmt.Sprintf("%s%s", checks.PluginDir, g.cobraParams[0]),
+		Command:        fmt.Sprintf("%s%s", viper.GetString(CommandDIrFlagName), g.cobraParams[0]),
 		Imports:        make([]interface{}, 0),
 		MethodsExecute: "PluginCheck",
 		ObjectName:     cmdID,
@@ -99,7 +98,7 @@ func (g *Generator) generate() *Config {
 		EnableNotifications: true,
 		MaxCheckAttempts:    3,
 		//IconImage: ,
-		Imports:    []string{"tpl-service-generic"},
+		//Imports:    []string{"tpl-service-generic"},
 		ObjectType: "template",
 		Fields:     make([]interface{}, 0),
 		Vars:       make(map[string]any),

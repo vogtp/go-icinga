@@ -11,12 +11,14 @@ import (
 const (
 	WriteConfigFlagName  = "icinga.director.write"  // GenerateFlagName is the name of the flag used to trigger gerneration
 	ImportConfigFlagName = "icinga.director.import" // ImportFlagName run icinga cli director basket restore
+	CommandDIrFlagName   = "icinga.command.dir"     // Directory where the check command are stored
 )
 
 // Flags adds a pflag for gerneration to the FlagSet
 func Flags(s *pflag.FlagSet) {
 	s.Bool(WriteConfigFlagName, false, "Generate a icinga director config and write it out")
 	s.Bool(ImportConfigFlagName, false, "Generate a icinga director config and run icinga cli director basket restore")
+	s.String(CommandDIrFlagName, "/usr/lib/nagios/plugins/", "Directory where the check command are stored")
 }
 
 // ShouldGenerate checks the flag if generation should be triggered
