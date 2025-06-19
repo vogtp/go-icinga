@@ -46,12 +46,17 @@ func (g *Generator) parsePFlags() {
 			return
 		}
 		fName := idPrintf("%s_%s", g.id, f.Name)
-		args[fmt.Sprintf("--%s", f.Name)] = argument{
-			Value: fmt.Sprintf("$%s$", fName),
-		}
+
 		datatype := "Icinga\\Module\\Director\\DataType\\DataTypeString"
 		if f.Value.Type() == "bool" {
 			datatype = "Icinga\\Module\\Director\\DataType\\DataTypeBoolean"
+			args[fmt.Sprintf("--%s", f.Name)] = argument{
+				SetIf: fmt.Sprintf("$%s$", fName),
+			}
+		} else {
+			args[fmt.Sprintf("--%s", f.Name)] = argument{
+				Value: fmt.Sprintf("$%s$", fName),
+			}
 		}
 		datafields[fieldID] = datafield{
 			Varname:     fName,

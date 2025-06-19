@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/vogtp/go-icinga/pkg/director"
 	"github.com/vogtp/go-icinga/pkg/icinga"
+	"github.com/vogtp/go-icinga/pkg/log"
 	"github.com/vogtp/go-icinga/pkg/ssh"
 )
 
@@ -39,6 +40,7 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 	c.init()
 
 	flags := c.PersistentFlags()
+	log.Flags(flags)
 	ssh.Flags(flags, c.DefaultRemoteOn)
 	director.Flags(flags)
 	flags.VisitAll(func(f *pflag.Flag) {

@@ -97,7 +97,7 @@ func (r *Result) PrintExit() {
 
 	isRemote := ssh.IsRemoteRun()
 
-	o := fmt.Sprintf("%s\n\n%s|%s", ret.String(), disp.String(), pref.String())
+	o := fmt.Sprintf("%s\n\n%s|%s\n", ret.String(), disp.String(), pref.String())
 
 	if isRemote {
 		sr := ssh.Result{Out: o, Code: r.code}
