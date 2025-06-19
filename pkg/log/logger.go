@@ -1,17 +1,17 @@
-package checks
+package log
 
 import (
 	"log/slog"
 	"strings"
 )
 
-var LogBuffer strings.Builder
+var Buffer strings.Builder
 
-func InitLog() *slog.Logger {
+func Init() *slog.Logger {
 	logOpts := slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}
-	handler := slog.NewTextHandler(&LogBuffer, &logOpts)
+	handler := slog.NewTextHandler(&Buffer, &logOpts)
 	l := slog.New(handler)
 	slog.SetDefault(l)
 	return l

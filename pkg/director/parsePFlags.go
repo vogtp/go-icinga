@@ -2,6 +2,7 @@ package director
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -13,6 +14,15 @@ const (
 	ImportConfigFlagName = "icinga.director.import" // ImportFlagName run icinga cli director basket restore
 	CommandDIrFlagName   = "icinga.command.dir"     // Directory where the check command are stored
 )
+
+var (
+	ignoredFlags []string = []string{WriteConfigFlagName, ImportConfigFlagName, "help"}
+)
+
+// IgnoreFlag adds a flag to the ignored flags
+func IgnoreFlag(f string) {
+	ignoredFlags = append(ignoredFlags, f)
+}
 
 // Flags adds a pflag for gerneration to the FlagSet
 func Flags(s *pflag.FlagSet) {
@@ -32,7 +42,7 @@ func (g *Generator) parsePFlags() {
 	fieldID := 1
 	cmdFields := make([]cmdField, 0)
 	g.CobraCmd.Flags().VisitAll(func(f *pflag.Flag) {
-		if f.Hidden || f.Name == WriteConfigFlagName || f.Name == ImportConfigFlagName || f.Name == "help" {
+		if f.Hidden || slices.Contains(ignoredFlags, f.Name) {
 			return
 		}
 		fName := idPrintf("%s_%s", g.id, f.Name)

@@ -8,6 +8,8 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/vogtp/go-icinga/pkg/icinga"
+	"github.com/vogtp/go-icinga/pkg/log"
+	"github.com/vogtp/go-icinga/pkg/ssh"
 )
 
 type keyValue struct {
@@ -40,7 +42,7 @@ func NewCheckResult(name string, options ...CheckResultOption) *Result {
 	for _, o := range options {
 		o(r)
 	}
-	InitLog()
+	log.Init()
 	return r
 }
 
@@ -89,11 +91,21 @@ func (r *Result) PrintExit() {
 	}
 	disp.WriteString(tw.Render())
 
-	if LogBuffer.Len() > 0 {
-		fmt.Fprintf(&disp, "\nLog:\n%s\n", LogBuffer.String())
+	if log.Buffer.Len() > 0 {
+		fmt.Fprintf(&disp, "\nLog:\n%s\n", log.Buffer.String())
 	}
 
-	fmt.Printf("%s\n\n%s|%s", ret.String(), disp.String(), pref.String())
+	isRemote := ssh.IsRemoteRun()
+
+	o := fmt.Sprintf("%s\n\n%s|%s", ret.String(), disp.String(), pref.String())
+
+	if isRemote {
+		sr := ssh.Result{Out: o, Code: r.code}
+		sr.Print()
+	} else {
+		fmt.Print(o)
+	}
+
 	if r.code > icinga.OK {
 		os.Exit(int(r.code))
 	}
