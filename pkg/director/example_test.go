@@ -56,7 +56,10 @@ func getTestCmd() *cobra.Command {
 					CobraCmd: cmd,
 					Output:   os.Stdout,
 				}
-				d.Generate()
+				if err := d.Generate(); err != nil {
+					fmt.Printf("Generate error: %v\n", err)
+					os.Exit(1)
+				}
 				os.Exit(0)
 			}
 		},

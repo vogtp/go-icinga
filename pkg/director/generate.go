@@ -81,18 +81,17 @@ func (g *Generator) generate() *Config {
 		ObjectName:     cmdID,
 		ObjectType:     "object",
 		Timeout:        30,
-		UUID:           GenerateUUID(),
+		UUID:           "", // GenerateUUID(),
 	}
 	g.cobraParams = g.cobraParams[1:]
 	srvID := fmt.Sprintf("%vtpl-service-%s", g.NamePrefix, g.id)
 	g.srvDef = service{
-		ObjectName:    srvID,
-		CheckCommand:  cmdID,
-		CheckInterval: 300,
-		RetryInterval: 60,
-		Notes:         g.Description,
-		NotesURL:      g.DescriptionURL,
-		//CommandEndpoint:     CommandEndpoint, //FIXME make generic
+		ObjectName:          srvID,
+		CheckCommand:        cmdID,
+		CheckInterval:       300,
+		RetryInterval:       60,
+		Notes:               g.Description,
+		NotesURL:            g.DescriptionURL,
 		UseAgent:            false,
 		EnablePerfdata:      true,
 		EnableNotifications: true,
@@ -102,7 +101,7 @@ func (g *Generator) generate() *Config {
 		ObjectType: "template",
 		Fields:     make([]interface{}, 0),
 		Vars:       make(map[string]any),
-		UUID:       GenerateUUID(),
+		UUID:       "", //GenerateUUID(),
 	}
 	g.srvDef.Vars["criticality"] = g.Criticality.Get()
 

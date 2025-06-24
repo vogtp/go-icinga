@@ -65,10 +65,9 @@ func (r *Result) PrintExit() {
 	style.HTML.EscapeText = true
 	tw.SetStyle(style)
 	for _, c := range r.counter {
-		//	pref = fmt.Sprintf("%s%s_ms=%v ", pref, n, t.Milliseconds())
-		fmt.Fprintf(&pref, "%s%s=%v ", r.prefix, c.name, r.counterFormater(c.name, c.value))
-		//fmt.Fprintf(&disp, "%s\t%v\n", c.name, r.counterFormater(c.name, c.value))
-		tw.AppendRow(table.Row{c.name, r.counterFormater(c.name, c.value)})
+		fmtCnt := r.counterFormater(c.name, c.value)
+		fmt.Fprintf(&pref, "%s%s=%v ", r.prefix, c.name, fmtCnt)
+		tw.AppendRow(table.Row{c.name, fmtCnt})
 	}
 	tw.SetColumnConfigs([]table.ColumnConfig{
 		{Number: 2, Align: text.AlignRight},

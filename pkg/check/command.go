@@ -15,6 +15,7 @@ import (
 	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/log"
 	"github.com/vogtp/go-icinga/pkg/ssh"
+	"github.com/vogtp/go-icinga/pkg/threshold"
 )
 
 type Command struct {
@@ -42,6 +43,7 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 	flags := c.PersistentFlags()
 	log.Flags(flags)
 	ssh.Flags(flags, c.DefaultRemoteOn)
+	threshold.Flags(flags)
 	director.Flags(flags)
 	flags.VisitAll(func(f *pflag.Flag) {
 		if err := viper.BindPFlag(f.Name, f); err != nil {
@@ -58,7 +60,9 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 			}
 		}
 		if err := c.generateDirectorConfig(cmd, args); err != nil {
-			return err
+			fmt.Printf("Icinga director import error: %v\n", err)
+			os.Exit(1)
+			return nil
 		}
 		//	fmt.Printf("ssh key: %s\n", viper.GetString("remote.sshkey"))
 		if err := ssh.RemoteCheck(cmd, args); err != nil {
