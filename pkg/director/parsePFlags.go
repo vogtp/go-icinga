@@ -65,7 +65,7 @@ func (g *Generator) parsePFlags() {
 			Datatype:    datatype,
 			UUID:        GenerateUUID(),
 		}
-		defVal := f.DefValue
+		defVal := f.Value.String()
 		if strings.HasSuffix(f.Value.Type(), "Slice") {
 			defVal = strings.ReplaceAll(defVal, "[", "")
 			defVal = strings.ReplaceAll(defVal, "]", "")
