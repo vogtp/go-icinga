@@ -15,7 +15,6 @@ import (
 	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/log"
 	"github.com/vogtp/go-icinga/pkg/ssh"
-	"github.com/vogtp/go-icinga/pkg/threshold"
 )
 
 type Command struct {
@@ -35,6 +34,8 @@ func (c *Command) Execute() error {
 }
 
 func (c *Command) ExecuteContext(ctx context.Context) error {
+	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug})
+	slog.SetDefault(slog.New(handler))
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer stop()
 
@@ -43,7 +44,7 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 	flags := c.PersistentFlags()
 	log.Flags(flags)
 	ssh.Flags(flags, c.DefaultRemoteOn)
-	threshold.Flags(flags)
+	ThresholdFlags(flags)
 	director.Flags(flags)
 	flags.VisitAll(func(f *pflag.Flag) {
 		if err := viper.BindPFlag(f.Name, f); err != nil {
@@ -68,7 +69,9 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 		if err := ssh.RemoteCheck(cmd, args); err != nil {
 			u, err2 := user.Current()
 			slog.Warn("Remote check error", "username", u.Name, "home", u.HomeDir, "errr", err2)
-			return err
+			fmt.Printf("Remote run returned error: %v\n", err)
+			os.Exit(int(icinga.UNKNOWN))
+			return nil
 		}
 		return nil
 	}
@@ -87,24 +90,26 @@ func (c *Command) AddCommand(cmds ...*cobra.Command) {
 	c.Command.AddCommand(cmds...)
 }
 
-func (c *Command) generateDirectorConfig(cmd *cobra.Command, args []string) error {
-	if director.ShouldGenerate() {
-		d := director.Generator{
-			NamePrefix:     c.NamePrefix,
-			Description:    c.Use,
-			DescriptionURL: c.DescriptionURL,
-			CobraCmd:       cmd,
-			Output:         os.Stdout,
-			Criticality:    c.Criticality,
-		}
-		if len(c.Short) > 0 {
-			d.Description = fmt.Sprintf("%s: %s", d.Description, c.Short)
-		}
-		if err := d.Generate(); err != nil {
-			return err
-		}
-		os.Exit(0)
+func (c *Command) generateDirectorConfig(cmd *cobra.Command, _ []string) error {
+	if !director.ShouldGenerate() {
+		return nil
 	}
+	slog.Info("Generate dir config")
+	d := director.Generator{
+		NamePrefix:     c.NamePrefix,
+		Description:    c.Use,
+		DescriptionURL: c.DescriptionURL,
+		CobraCmd:       cmd,
+		Output:         os.Stdout,
+		Criticality:    c.Criticality,
+	}
+	if len(c.Short) > 0 {
+		d.Description = fmt.Sprintf("%s: %s", d.Description, c.Short)
+	}
+	if err := d.Generate(); err != nil {
+		return err
+	}
+	os.Exit(0)
 	return nil
 }
 func (c *Command) init() {

@@ -2,6 +2,7 @@ package check
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -13,8 +14,9 @@ import (
 )
 
 type keyValue struct {
-	name  string
-	value any
+	name       string
+	value      any
+	resultCode icinga.ResultCode
 }
 
 type Result struct {
@@ -64,10 +66,12 @@ func (r *Result) PrintExit() {
 	style := table.StyleLight
 	style.HTML.EscapeText = true
 	tw.SetStyle(style)
+	tm := NewThreshholdsManager(r)
+	tm.Process()
 	for _, c := range r.counter {
 		fmtCnt := r.counterFormater(c.name, c.value)
 		fmt.Fprintf(&pref, "%s%s=%v ", r.prefix, c.name, fmtCnt)
-		tw.AppendRow(table.Row{c.name, fmtCnt})
+		tw.AppendRow(table.Row{c.resultCode.IcingaString(), c.name, fmtCnt})
 	}
 	tw.SetColumnConfigs([]table.ColumnConfig{
 		{Number: 2, Align: text.AlignRight},
@@ -95,7 +99,7 @@ func (r *Result) PrintExit() {
 	}
 
 	isRemote := ssh.IsRemoteRun()
-
+	slog.Debug("Is this command running by ssh?", "isRemote", isRemote)
 	o := fmt.Sprintf("%s\n\n%s|%s\n", ret.String(), disp.String(), pref.String())
 
 	if isRemote {
