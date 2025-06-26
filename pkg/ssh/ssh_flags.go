@@ -38,7 +38,9 @@ func Flags(flags *pflag.FlagSet, defaultRemoteOn bool) {
 // ShouldRemoteRun idicates if the command should be run remotely
 func ShouldRemoteRun() bool {
 	rh := viper.GetString(remoteHost)
-	return len(rh) > 0 && rh != remoteHostDefault
+	shouldRunRemote := len(rh) > 0 && rh != remoteHostDefault
+	slog.Debug("Should the command run remote", "shouldRunRemote", shouldRunRemote, "remoteHost", rh, "remoteHostDefault", remoteHostDefault)
+	return shouldRunRemote
 }
 
 func IsRemoteRun() bool {

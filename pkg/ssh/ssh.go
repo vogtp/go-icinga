@@ -24,53 +24,56 @@ import (
 
 func RemoteCheck(cmd *cobra.Command, args []string) error {
 	log.Init()
-	if ShouldRemoteRun() {
-		cmds := strings.Split(cmd.CommandPath(), " ")
-		cmds = append(cmds, args...)
-		cmd.Flags().Visit(func(f *pflag.Flag) {
-			if slices.Contains(ignoredFlags, f.Name) {
-				return
-			}
-			val := f.Value.String()
-			if strings.HasSuffix(f.Value.Type(), "Slice") {
-				val = strings.ReplaceAll(val, "[", "")
-				val = strings.ReplaceAll(val, "]", "")
-				val = strings.ReplaceAll(val, ", ", ",")
-			}
-			//slog.Info("Flag", "name", f.Name, "type", f.Value.Type())
-			if f.Value.Type() == "bool" {
-				cmds = append(cmds, fmt.Sprintf("--%s", f.Name))
-				return
-			}
-			cmds = append(cmds, fmt.Sprintf("--%s", f.Name), val)
-		})
-
-		out, err := runOrCopy(cmd.Context(), cmds)
-		if err != nil {
-			if log.Buffer.Len() > 0 {
-				fmt.Printf("Log:\n%s\n", log.Buffer.String())
-			}
-			return err
-		}
-		r := Result{}
-		if err := json.Unmarshal([]byte(out), &r); err != nil {
-			if log.Buffer.Len() > 0 {
-				fmt.Printf("Log:\n%s\n", log.Buffer.String())
-			}
-			return err
-		}
-		out = r.Out
-		if log.Buffer.Len() > 0 {
-			out = strings.ReplaceAll(out, "|", fmt.Sprintf("\nLocal Log:\n%s|", html.EscapeString(log.Buffer.String())))
-		}
-		if len(out) < 1 {
-			fmt.Printf("Log:\n%s\n", log.Buffer.String())
-			os.Exit(int(icinga.UNKNOWN))
-		}
-
-		fmt.Println(out)
-		os.Exit(int(r.Code))
+	if !ShouldRemoteRun() {
+		return nil
 	}
+	cmds := strings.Split(cmd.CommandPath(), " ")
+	cmds = append(cmds, args...)
+	cmd.Flags().Visit(func(f *pflag.Flag) {
+		if slices.Contains(ignoredFlags, f.Name) {
+			return
+		}
+		val := f.Value.String()
+		if strings.HasSuffix(f.Value.Type(), "Slice") {
+			val = strings.ReplaceAll(val, "[", "")
+			val = strings.ReplaceAll(val, "]", "")
+			val = strings.ReplaceAll(val, ", ", ",")
+		}
+		//slog.Info("Flag", "name", f.Name, "type", f.Value.Type())
+		if f.Value.Type() == "bool" {
+			cmds = append(cmds, fmt.Sprintf("--%s", f.Name))
+			return
+		}
+		if len(val) > 0 {
+			cmds = append(cmds, fmt.Sprintf("--%s", f.Name), val)
+		}
+	})
+
+	out, err := runOrCopy(cmd.Context(), cmds)
+	if err != nil {
+		if log.Buffer.Len() > 0 {
+			fmt.Printf("Log:\n%s\n", log.Buffer.String())
+		}
+		return fmt.Errorf("remote exe: %w", err)
+	}
+	r := Result{}
+	if err := json.Unmarshal([]byte(out), &r); err != nil {
+		if log.Buffer.Len() > 0 {
+			fmt.Printf("Log:\n%s\n", log.Buffer.String())
+		}
+		return fmt.Errorf("cannot parse remote reponse as json: %w", err)
+	}
+	out = r.Out
+	if log.Buffer.Len() > 0 {
+		out = strings.ReplaceAll(out, "|", fmt.Sprintf("\nLocal Log:\n%s|", html.EscapeString(log.Buffer.String())))
+	}
+	if len(out) < 1 {
+		fmt.Printf("Log:\n%s\n", log.Buffer.String())
+		os.Exit(int(icinga.UNKNOWN))
+	}
+
+	fmt.Println(out)
+	os.Exit(int(r.Code))
 	return nil
 }
 
