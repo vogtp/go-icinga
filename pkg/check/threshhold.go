@@ -1,6 +1,7 @@
 package check
 
 import (
+	"fmt"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -75,7 +76,7 @@ func (t *threshold) process(kv *keyValue, formatedValue string) icinga.ResultCod
 	}
 	f, ok := parseFloat(kv.value)
 	if !ok {
-		slog.Debug("Cannot parse raw float threshhold value", "value", kv.value, "formatedValue", formatedValue)
+		slog.Debug("Cannot parse raw float threshhold value", "value", kv.value, "formatedValue", formatedValue, "type", fmt.Sprintf("%T",kv.value))
 		return icinga.OK
 	}
 	if t.val <= f {
@@ -101,6 +102,21 @@ func parseFloat(v any) (float64, bool) {
 		return float64(i), ok
 	}
 	if i, ok := v.(int64); ok {
+		return float64(i), ok
+	}
+	if i, ok := v.(uint); ok {
+		return float64(i), ok
+	}
+	if i, ok := v.(uint8); ok {
+		return float64(i), ok
+	}
+	if i, ok := v.(uint16); ok {
+		return float64(i), ok
+	}
+	if i, ok := v.(uint32); ok {
+		return float64(i), ok
+	}
+	if i, ok := v.(uint64); ok {
 		return float64(i), ok
 	}
 	if s, ok := v.(string); ok {

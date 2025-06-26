@@ -23,7 +23,7 @@ func ThresholdFlags(flags *pflag.FlagSet) {
 	flags.String(WarningThreshFlag, warningThreshDefault, "Warning threshold, separate multiple thresholds with space, supports duration, % and raw values")
 }
 
-func SetCriticalThresholdDefault(flags *pflag.FlagSet, s string) {
+func SetCriticalThresholdDefault(s string) {
 	if len(criticalThreshDefault) > 0 {
 		criticalThreshDefault = fmt.Sprintf("%s %s", criticalThreshDefault, s)
 	} else {
@@ -33,8 +33,8 @@ func SetCriticalThresholdDefault(flags *pflag.FlagSet, s string) {
 		slog.Debug("Not setting critical default, parameter given", "param", viper.GetString(CriticalThreshFlag), "default", s)
 		return
 	}
-	slog.Debug("Setting critical default", "param", viper.GetString(CriticalThreshFlag), "default", s)
-	viper.Set(CriticalThreshFlag, criticalThreshDefault)
+	slog.Debug("Setting critical default", "default", s)
+	viper.SetDefault(CriticalThreshFlag, criticalThreshDefault)
 }
 
 func SetWarningThresholdDefault(s string) {
@@ -47,6 +47,6 @@ func SetWarningThresholdDefault(s string) {
 		slog.Debug("Not setting warning default, parameter given", "param", viper.GetString(WarningThreshFlag), "default", s)
 		return
 	}
-	slog.Debug("Setting warning default", "param", viper.GetString(WarningThreshFlag), "default", s)
-	viper.Set(WarningThreshFlag, warningThreshDefault)
+	slog.Debug("Setting warning default", "default", s)
+	viper.SetDefault(WarningThreshFlag, warningThreshDefault)
 }

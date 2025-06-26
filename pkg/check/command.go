@@ -34,8 +34,7 @@ func (c *Command) Execute() error {
 }
 
 func (c *Command) ExecuteContext(ctx context.Context) error {
-	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug})
-	slog.SetDefault(slog.New(handler))
+
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer stop()
 
@@ -57,6 +56,11 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 	c.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if c.preRun != nil {
 			if err := c.preRun(cmd, args); err != nil {
+				return err
+			}
+		}
+		if cmd.PreRunE != nil {
+			if err := cmd.PreRunE(cmd, args); err != nil {
 				return err
 			}
 		}
@@ -94,7 +98,8 @@ func (c *Command) generateDirectorConfig(cmd *cobra.Command, _ []string) error {
 	if !director.ShouldGenerate() {
 		return nil
 	}
-	slog.Info("Generate dir config")
+	slog.Info("thresh", "crit", viper.GetString("critical"))
+	slog.Debug("Generate dir config")
 	d := director.Generator{
 		NamePrefix:     c.NamePrefix,
 		Description:    c.Use,

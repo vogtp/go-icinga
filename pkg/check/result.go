@@ -118,6 +118,10 @@ func (r *Result) SetHeader(format string, a ...any) {
 	r.header = fmt.Sprintf(format, a...)
 }
 
+func (r *Result) GetCode() icinga.ResultCode {
+	return r.code
+}
+
 func (r *Result) SetCode(c icinga.ResultCode) {
 	r.code = max(r.code, c)
 }

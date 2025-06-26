@@ -45,6 +45,13 @@ func (g *Generator) parsePFlags() {
 		if f.Hidden || slices.Contains(ignoredFlags, f.Name) {
 			return
 		}
+		//FIXME this is a hack
+		if f.Name == "critical" {
+			f.Value.Set(viper.GetString("critical"))
+		}
+		if f.Name == "warning" {
+			f.Value.Set(viper.GetString("warning"))
+		}
 		fName := idPrintf("%s_%s", g.id, f.Name)
 
 		datatype := "Icinga\\Module\\Director\\DataType\\DataTypeString"
