@@ -18,9 +18,14 @@ var (
 	warningThreshDefault  = ""
 )
 
+const treshDetail = `(e.g. "95% 1s 1000 lookup:1us")
+Separate multiple thresholds with space 
+Supports %, duration and raw values
+To match a single counter, perfix a threshold with a label followed by a colon ':'`
+
 func ThresholdFlags(flags *pflag.FlagSet) {
-	flags.String(CriticalThreshFlag, criticalThreshDefault, "Crititcal threshold, separate multiple thresholds with space, supports duration, % and raw values ")
-	flags.String(WarningThreshFlag, warningThreshDefault, "Warning threshold, separate multiple thresholds with space, supports duration, % and raw values")
+	flags.String(CriticalThreshFlag, criticalThreshDefault, fmt.Sprintf("Crititcal threshold%s", treshDetail))
+	flags.String(WarningThreshFlag, warningThreshDefault, fmt.Sprintf("Warning threshold%s", treshDetail))
 }
 
 func SetCriticalThresholdDefault(s string) {

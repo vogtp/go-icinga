@@ -14,6 +14,7 @@ import (
 
 type threshold struct {
 	resultCode icinga.ResultCode
+	label      string
 	duration   time.Duration
 	val        float64
 	isPercent  bool
@@ -21,6 +22,11 @@ type threshold struct {
 
 func newThreshhold(resultCode icinga.ResultCode, conf string) threshold {
 	t := threshold{resultCode: resultCode}
+	splt := strings.Split(conf,":")
+	if len(splt) >1{
+		t.label=splt[0]
+		conf = splt[1]
+	}
 	if strings.HasSuffix(conf, "%") {
 		tresh, err := strconv.ParseFloat(conf[:len(conf)-1], 64)
 		if err != nil {
@@ -46,6 +52,9 @@ func newThreshhold(resultCode icinga.ResultCode, conf string) threshold {
 }
 
 func (t *threshold) process(kv *keyValue, formatedValue string) icinga.ResultCode {
+	if len(t.label) > 0 && t.label != kv.name {
+		return icinga.OK
+	}
 	kv.resultCode = icinga.OK
 	if strings.HasSuffix(formatedValue, "%") {
 		if !t.isPercent {
