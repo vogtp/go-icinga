@@ -57,11 +57,13 @@ func RemoteCheck(cmd *cobra.Command, args []string) error {
 		}
 	}
 	if r.HashMismatch {
-		if err:=copyRemote(cmd.Context(), cmds); err != nil{
-			return fmt.Errorf("cannot copy to remote: %w",err)
+		if err := copyRemote(cmd.Context(), cmds); err != nil {
+			return fmt.Errorf("cannot copy to remote: %w", err)
 		}
-		_, err := runRemote(cmd.Context(), cmds)
-		return err
+		r, err = runRemote(cmd.Context(), cmds)
+		if err != nil {
+			return fmt.Errorf("run remote after remote copy: %w", err)
+		}
 	}
 	out := r.Out
 	if log.Buffer.Len() > 0 {
@@ -129,7 +131,7 @@ func runRemote(ctx context.Context, cmd []string) (*Result, error) {
 	return r, nil
 }
 
-func copyRemote(ctx context.Context, cmd []string)  error {
+func copyRemote(ctx context.Context, cmd []string) error {
 	user := viper.GetString(remoteUser)
 	host := viper.GetString(remoteHost)
 
@@ -145,14 +147,14 @@ func copyRemote(ctx context.Context, cmd []string)  error {
 	}
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", host), config)
 	if err != nil {
-		return  fmt.Errorf("failed to dial: %w", err)
+		return fmt.Errorf("failed to dial: %w", err)
 	}
 	defer client.Close()
 	remote := cmd[0]
 	local := os.Args[0]
 	slog.Info("remote version is outdated: copy local to remote ", "local", local, "remote", remote)
 	if err := Copy(ctx, client, local, remote); err != nil {
-		return  err
+		return err
 	}
 	return nil
 }
