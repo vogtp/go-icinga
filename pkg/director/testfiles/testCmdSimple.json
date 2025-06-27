@@ -2,21 +2,17 @@
   "Command": {
     "cmd-check-testCmd": {
       "arguments": {
+        "--icinga.command.dir": {
+          "value": "$testCmd_icinga_command_dir$"
+        },
         "--testFlagBool": {
-          "value": "$testCmd_testFlagBool$",
-          "set_if": "$testCmd_testFlagBool$",
-          "required": false,
-          "skip_key": false
+          "set_if": "$testCmd_testFlagBool$"
         },
         "--testFlagString": {
-          "value": "$testCmd_testFlagString$",
-          "set_if": "$testCmd_testFlagString$",
-          "required": false,
-          "skip_key": false
+          "value": "$testCmd_testFlagString$"
         }
       },
-      "command": "/usr/lib64/nagios/plugins/testCmd",
-      "disabled": false,
+      "command": "/usr/lib/nagios/plugins/testCmd",
       "fields": [
         {
           "datafield_id": 1,
@@ -27,86 +23,64 @@
           "datafield_id": 2,
           "is_required": "n",
           "var_filter": null
+        },
+        {
+          "datafield_id": 3,
+          "is_required": "n",
+          "var_filter": null
         }
       ],
-      "imports": [],
-      "is_string": null,
       "methods_execute": "PluginCheck",
       "object_name": "cmd-check-testCmd",
       "object_type": "object",
       "timeout": 30,
-      "vars": {},
-      "zone": null,
-      "uuid": "4c9c22a6-80a5-4cfb-a857-896d84f24e04"
+      "vars": {}
     }
   },
   "ServiceTemplate": {
     "tpl-service-testCmd": {
-      "action_url": null,
-      "apply_for": null,
-      "assign_filter": null,
       "check_command": "cmd-check-testCmd",
-      "check_interval": 86400,
-      "check_period": null,
-      "check_timeout": null,
-      "command_endpoint": null,
-      "disabled": false,
-      "display_name": null,
-      "enable_active_checks": null,
-      "enable_event_handler": null,
-      "enable_flapping": null,
+      "check_interval": 300,
       "enable_notifications": true,
-      "enable_passive_checks": null,
       "enable_perfdata": true,
-      "event_command": null,
-      "fields": [],
-      "flapping_threshold_high": null,
-      "flapping_threshold_low": null,
-      "groups": null,
-      "host": null,
-      "icon_image": "",
-      "icon_image_alt": null,
-      "imports": [
-        "tpl-service-generic"
-      ],
       "max_check_attempts": 3,
       "notes": "Test Icinga Directory Bucket",
       "notes_url": "https://github.com/vogtp/go-icinga/",
       "object_name": "tpl-service-testCmd",
       "object_type": "template",
-      "retry_interval": 3600,
-      "service_set": null,
-      "template_choice": null,
-      "use_agent": null,
-      "use_var_overrides": null,
+      "retry_interval": 60,
       "vars": {
         "criticality": "C",
+        "testCmd_icinga_command_dir": "/usr/lib/nagios/plugins/",
         "testCmd_testFlagBool": "false",
         "testCmd_testFlagString": ""
-      },
-      "volatile": null,
-      "zone": null,
-      "uuid": "3300dc08-2db2-414a-badf-8f1f5bb266bb"
+      }
     }
   },
   "Datafield": {
     "1": {
+      "varname": "testCmd_icinga_command_dir",
+      "caption": "testCmd: icinga.command.dir",
+      "description": "Directory where the check command are stored",
+      "datatype": "Icinga\\Module\\Director\\DataType\\DataTypeString",
+      "settings": {},
+      "uuid": "4c9c22a6-80a5-4cfb-a857-896d84f24e04"
+    },
+    "2": {
       "varname": "testCmd_testFlagBool",
       "caption": "testCmd: testFlagBool",
       "description": "A boolean test flag",
       "datatype": "Icinga\\Module\\Director\\DataType\\DataTypeBoolean",
-      "format": null,
       "settings": {},
-      "uuid": "3e4a7d42-7e6c-4e07-8c8d-746bef32adf3"
+      "uuid": "3300dc08-2db2-414a-badf-8f1f5bb266bb"
     },
-    "2": {
+    "3": {
       "varname": "testCmd_testFlagString",
       "caption": "testCmd: testFlagString",
       "description": "A string test flag",
       "datatype": "Icinga\\Module\\Director\\DataType\\DataTypeString",
-      "format": null,
       "settings": {},
-      "uuid": "f4880941-391f-4c98-9361-a70256fa6d5d"
+      "uuid": "3e4a7d42-7e6c-4e07-8c8d-746bef32adf3"
     }
   }
 }

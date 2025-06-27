@@ -3,25 +3,19 @@
     "cmd-check-testCmd-testSubCmd": {
       "arguments": {
         "--testFlagBoolSubCmd": {
-          "value": "$testCmd_testSubCmd_testFlagBoolSubCmd$",
-          "set_if": "$testCmd_testSubCmd_testFlagBoolSubCmd$",
-          "required": false,
-          "skip_key": false
+          "set_if": "$testCmd_testSubCmd_testFlagBoolSubCmd$"
         },
         "--testFlagStringSubCmd": {
-          "value": "$testCmd_testSubCmd_testFlagStringSubCmd$",
-          "set_if": "$testCmd_testSubCmd_testFlagStringSubCmd$",
-          "required": false,
-          "skip_key": false
+          "value": "$testCmd_testSubCmd_testFlagStringSubCmd$"
         },
         "testSubCmd": {
           "value": "$testCmd_testSubCmd_cmd_0$",
           "required": true,
-          "skip_key": true
+          "skip_key": true,
+          "order": 1
         }
       },
-      "command": "/usr/lib64/nagios/plugins/testCmd",
-      "disabled": false,
+      "command": "/usr/lib/nagios/plugins/testCmd",
       "fields": [
         {
           "datafield_id": 1,
@@ -39,65 +33,31 @@
           "var_filter": null
         }
       ],
-      "imports": [],
-      "is_string": null,
       "methods_execute": "PluginCheck",
       "object_name": "cmd-check-testCmd-testSubCmd",
       "object_type": "object",
       "timeout": 30,
-      "vars": {},
-      "zone": null,
-      "uuid": "4c9c22a6-80a5-4cfb-a857-896d84f24e04"
+      "vars": {}
     }
   },
   "ServiceTemplate": {
     "tpl-service-testCmd-testSubCmd": {
-      "action_url": null,
-      "apply_for": null,
-      "assign_filter": null,
       "check_command": "cmd-check-testCmd-testSubCmd",
-      "check_interval": 86400,
-      "check_period": null,
-      "check_timeout": null,
-      "command_endpoint": null,
-      "disabled": false,
-      "display_name": null,
-      "enable_active_checks": null,
-      "enable_event_handler": null,
-      "enable_flapping": null,
+      "check_interval": 300,
       "enable_notifications": true,
-      "enable_passive_checks": null,
       "enable_perfdata": true,
-      "event_command": null,
-      "fields": [],
-      "flapping_threshold_high": null,
-      "flapping_threshold_low": null,
-      "groups": null,
-      "host": null,
-      "icon_image": "",
-      "icon_image_alt": null,
-      "imports": [
-        "tpl-service-generic"
-      ],
       "max_check_attempts": 3,
       "notes": "Test Icinga Directory Bucket",
       "notes_url": "https://github.com/vogtp/go-icinga/",
       "object_name": "tpl-service-testCmd-testSubCmd",
       "object_type": "template",
-      "retry_interval": 3600,
-      "service_set": null,
-      "template_choice": null,
-      "use_agent": null,
-      "use_var_overrides": null,
+      "retry_interval": 60,
       "vars": {
         "criticality": "A",
         "testCmd_testSubCmd_cmd_0": "testSubCmd",
         "testCmd_testSubCmd_testFlagBoolSubCmd": "false",
         "testCmd_testSubCmd_testFlagStringSubCmd": ""
-      },
-      "volatile": null,
-      "zone": null,
-      "uuid": "3300dc08-2db2-414a-badf-8f1f5bb266bb"
+      }
     }
   },
   "Datafield": {
@@ -106,27 +66,23 @@
       "caption": "testCmd testSubCmd: testFlagBoolSubCmd",
       "description": "A boolean test sub command flag",
       "datatype": "Icinga\\Module\\Director\\DataType\\DataTypeBoolean",
-      "format": null,
       "settings": {},
-      "uuid": "3e4a7d42-7e6c-4e07-8c8d-746bef32adf3"
+      "uuid": "4c9c22a6-80a5-4cfb-a857-896d84f24e04"
     },
     "2": {
       "varname": "testCmd_testSubCmd_testFlagStringSubCmd",
       "caption": "testCmd testSubCmd: testFlagStringSubCmd",
       "description": "A string test sub command flag",
       "datatype": "Icinga\\Module\\Director\\DataType\\DataTypeString",
-      "format": null,
       "settings": {},
-      "uuid": "f4880941-391f-4c98-9361-a70256fa6d5d"
+      "uuid": "3300dc08-2db2-414a-badf-8f1f5bb266bb"
     },
     "3": {
       "varname": "testCmd_testSubCmd_cmd_0",
       "caption": "testCmd testSubCmd: Command0",
-      "description": "",
       "datatype": "Icinga\\Module\\Director\\DataType\\DataTypeString",
-      "format": null,
       "settings": {},
-      "uuid": "4c9c22a6-80a5-4cfb-a857-896d84f24e04"
+      "uuid": "3e4a7d42-7e6c-4e07-8c8d-746bef32adf3"
     }
   }
 }
