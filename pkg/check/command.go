@@ -64,6 +64,9 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 				return err
 			}
 		}
+		if err := ssh.CheckHash(); err != nil {
+			return fmt.Errorf("cannot check hash: %w", err)
+		}
 		if err := c.generateDirectorConfig(cmd, args); err != nil {
 			fmt.Printf("Icinga director import error: %v\n", err)
 			os.Exit(1)

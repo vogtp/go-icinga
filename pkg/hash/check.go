@@ -11,7 +11,7 @@ func Check(should string) error {
 	}
 	if is != should {
 		// fmt.Printf("%s (is)\n%s (should)\n", is, should)
-		return fmt.Errorf("hashes to not match")
+		return fmt.Errorf("local: %s remote: %s", should, is)
 	}
 	return nil
 }

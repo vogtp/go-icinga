@@ -15,6 +15,7 @@ const (
 	remoteUser        = "remote.user"
 	remoteUserKey     = "remote.sshkey"
 	remoteUserKeyPass = "remote.sshkeypass"
+	hashCheck         = "hash.check"
 	remoteHostDefault = "$host.name$"
 	isRemoteRun       = "remote.is_remote"
 )
@@ -28,11 +29,13 @@ func Flags(flags *pflag.FlagSet, defaultRemoteOn bool) {
 	flags.String(remoteUser, "root", "Remote user name")
 	flags.String(remoteUserKey, "/var/lib/nagios/.ssh/icinga_ssh", "ssh private key file location")
 	flags.String(remoteUserKeyPass, "", "ssh private key password")
+	flags.String(hashCheck, "", "check the hash")
 	flags.Bool(isRemoteRun, false, "Internal to indicate a remote run")
 	if err := flags.MarkHidden(isRemoteRun); err != nil {
 		slog.Warn("Cannot hide flag", "flag", isRemoteRun)
 	}
 	director.IgnoreFlag(isRemoteRun)
+	director.IgnoreFlag(hashCheck)
 }
 
 // ShouldRemoteRun idicates if the command should be run remotely

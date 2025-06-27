@@ -49,21 +49,21 @@ func RemoteCheck(cmd *cobra.Command, args []string) error {
 		}
 	})
 
-	out, err := runOrCopy(cmd.Context(), cmds)
+	r, err := runRemote(cmd.Context(), cmds)
 	if err != nil {
+		slog.Info("Remote error", "err", err, "result", r)
 		if log.Buffer.Len() > 0 {
 			fmt.Printf("Log:\n%s\n", log.Buffer.String())
 		}
-		return fmt.Errorf("remote exe: %w", err)
 	}
-	r := Result{}
-	if err := json.Unmarshal([]byte(out), &r); err != nil {
-		if log.Buffer.Len() > 0 {
-			fmt.Printf("Log:\n%s\n", log.Buffer.String())
+	if r.HashMismatch {
+		if err:=copyRemote(cmd.Context(), cmds); err != nil{
+			return fmt.Errorf("cannot copy to remote: %w",err)
 		}
-		return fmt.Errorf("cannot parse remote reponse as json: %w", err)
+		_, err := runRemote(cmd.Context(), cmds)
+		return err
 	}
-	out = r.Out
+	out := r.Out
 	if log.Buffer.Len() > 0 {
 		out = strings.ReplaceAll(out, "|", fmt.Sprintf("\nLocal Log:\n%s|", html.EscapeString(log.Buffer.String())))
 	}
@@ -77,16 +77,31 @@ func RemoteCheck(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func runOrCopy(ctx context.Context, cmd []string) (string, error) {
+func CheckHash() error {
+	log.Init()
+	h := viper.GetString(hashCheck)
+	if len(h) < 1 {
+		return nil
+	}
+	if err := hash.Check(h); err != nil {
+		slog.Info("Remote and local hashes do not match", "err", err)
+		r := Result{HashMismatch: true}
+		r.Print()
+		os.Exit(0)
+	}
+	return nil
+}
+
+func runRemote(ctx context.Context, cmd []string) (*Result, error) {
 	if len(cmd) < 1 {
-		return "", fmt.Errorf("no command given: %v", cmd)
+		return nil, fmt.Errorf("no command given: %v", cmd)
 	}
 	user := viper.GetString(remoteUser)
 	host := viper.GetString(remoteHost)
 
 	sshAuth, err := getSshAuth()
 	if err != nil {
-		return "", fmt.Errorf("no ssh auth: %w", err)
+		return nil, fmt.Errorf("no ssh auth: %w", err)
 	}
 
 	config := &ssh.ClientConfig{
@@ -96,35 +111,56 @@ func runOrCopy(ctx context.Context, cmd []string) (string, error) {
 	}
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", host), config)
 	if err != nil {
-		return "", fmt.Errorf("failed to dial: %w", err)
+		return nil, fmt.Errorf("failed to dial: %w", err)
 	}
 	defer client.Close()
 
 	h, err := hash.Calc()
 	if err != nil {
-		return "", fmt.Errorf("cannot calculate my hash: %w", err)
+		return nil, fmt.Errorf("cannot calculate my hash: %w", err)
 	}
-	remote := cmd[0]
-	if _, err := exec(client, fmt.Sprintf("./%s hash check %s", remote, h)); err != nil {
-		local := os.Args[0]
-		slog.Info("remote version is outdated: copy local to remote ", "local", local, "remote", remote)
-		if err := Copy(ctx, client, local, remote); err != nil {
-			return "", err
-		}
-	}
-	cmdLine := fmt.Sprintf("./%s --%s", strings.Join(cmd, " "), isRemoteRun)
+
+	cmdLine := fmt.Sprintf("./%s --%s --%s %q", strings.Join(cmd, " "), isRemoteRun, hashCheck, h)
 	slog.Debug("Executing remote command", "cmd", cmdLine, "host", host, "user", user)
-	out, err := exec(client, cmdLine)
+	r, err := exec(client, cmdLine)
 	if err != nil {
-		return "", fmt.Errorf("%q returned: %w", cmdLine, err)
+		return r, fmt.Errorf("%q returned: %w", cmdLine, err)
 	}
-	return out, nil
+	return r, nil
 }
 
-func exec(client *ssh.Client, cmd string) (string, error) {
+func copyRemote(ctx context.Context, cmd []string)  error {
+	user := viper.GetString(remoteUser)
+	host := viper.GetString(remoteHost)
+
+	sshAuth, err := getSshAuth()
+	if err != nil {
+		return fmt.Errorf("no ssh auth: %w", err)
+	}
+
+	config := &ssh.ClientConfig{
+		User:            user,
+		Auth:            sshAuth,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", host), config)
+	if err != nil {
+		return  fmt.Errorf("failed to dial: %w", err)
+	}
+	defer client.Close()
+	remote := cmd[0]
+	local := os.Args[0]
+	slog.Info("remote version is outdated: copy local to remote ", "local", local, "remote", remote)
+	if err := Copy(ctx, client, local, remote); err != nil {
+		return  err
+	}
+	return nil
+}
+
+func exec(client *ssh.Client, cmd string) (*Result, error) {
 	session, err := client.NewSession()
 	if err != nil {
-		return "", fmt.Errorf("failed to create session: %w", err)
+		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
 	defer session.Close()
 	var stdo bytes.Buffer
@@ -135,5 +171,13 @@ func exec(client *ssh.Client, cmd string) (string, error) {
 	if stde.Len() > 0 {
 		fmt.Println(stde.String())
 	}
-	return stdo.String(), err
+	r := &Result{}
+	if err := json.Unmarshal(stdo.Bytes(), &r); err != nil {
+		if log.Buffer.Len() > 0 {
+			fmt.Printf("Log:\n%s\n", log.Buffer.String())
+		}
+		r.HashMismatch = true
+		return r, fmt.Errorf("cannot parse remote reponse as json: %w", err)
+	}
+	return r, err
 }

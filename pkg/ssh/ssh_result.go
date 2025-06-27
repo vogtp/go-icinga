@@ -9,8 +9,9 @@ import (
 )
 
 type Result struct {
-	Out  string
-	Code icinga.ResultCode
+	Out          string
+	HashMismatch bool
+	Code         icinga.ResultCode
 }
 
 func (r Result) Print() {
