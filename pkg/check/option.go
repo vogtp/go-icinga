@@ -10,19 +10,19 @@ func CheckPrefix(p string) CheckResultOption {
 	}
 }
 
-func DisplayFormater(f func(counter map[string]Value) string) CheckResultOption {
+func DisplayFormater(f func(counter map[string]Data) string) CheckResultOption {
 	return func(r *Result) {
 		r.displayFormater = f
 	}
 }
-func CounterFormater(f func(name string, value Value) string) CheckResultOption {
+func CounterFormater(f func(name string, value Data) string) CheckResultOption {
 	return func(r *Result) {
 		r.counterFormater = f
 	}
 }
 
 func PercentCounterFormater() CheckResultOption {
-	return CounterFormater(func(name string, value Value) string {
+	return CounterFormater(func(name string, value Data) string {
 		f, ok := value.Value.(float64)
 		if !ok {
 			return fmt.Sprintf("%v", value)

@@ -51,7 +51,7 @@ func newThreshhold(resultCode icinga.ResultCode, conf string) threshold {
 	return t
 }
 
-func (t *threshold) process(kv *Value, formatedValue string) icinga.ResultCode {
+func (t *threshold) process(kv *Data, formatedValue string) icinga.ResultCode {
 	if len(t.label) > 0 && t.label != kv.Name {
 		return icinga.OK
 	}

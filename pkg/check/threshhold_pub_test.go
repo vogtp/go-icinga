@@ -16,7 +16,7 @@ const (
 	warnTresh = "80% 300us 150"
 )
 
-func formater(name string, val check.Value) string {
+func formater(name string, val check.Data) string {
 	value := val.Value
 	if strings.HasPrefix(name, "cpu") {
 		return fmt.Sprintf("%v%%", value)

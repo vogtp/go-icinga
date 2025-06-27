@@ -13,7 +13,7 @@ import (
 	"github.com/vogtp/go-icinga/pkg/ssh"
 )
 
-type Value struct {
+type Data struct {
 	Name       string
 	Value      any
 	ResultCode icinga.ResultCode
@@ -24,11 +24,11 @@ type Result struct {
 	prefix string
 
 	header  string
-	counter []Value
-	stati   []Value
+	counter []Data
+	stati   []Data
 
-	counterFormater func(name string, value Value) string
-	displayFormater func(counter map[string]Value) string
+	counterFormater func(name string, value Data) string
+	displayFormater func(counter map[string]Data) string
 
 	err  error
 	code icinga.ResultCode
@@ -37,9 +37,9 @@ type Result struct {
 func NewResult(name string, options ...CheckResultOption) *Result {
 	r := &Result{
 		name:            name,
-		stati:           make([]Value, 0),
-		counter:         make([]Value, 0),
-		counterFormater: func(name string, value Value) string { return fmt.Sprintf("%v", value.Value) },
+		stati:           make([]Data, 0),
+		counter:         make([]Data, 0),
+		counterFormater: func(name string, value Data) string { return fmt.Sprintf("%v", value.Value) },
 	}
 	for _, o := range options {
 		o(r)
@@ -78,7 +78,7 @@ func (r *Result) PrintExit() {
 	})
 	disp.WriteString(tw.Render())
 	if r.displayFormater != nil {
-		ctr := make(map[string]Value, len(r.counter))
+		ctr := make(map[string]Data, len(r.counter))
 		for _, c := range r.counter {
 			ctr[c.Name] = c
 		}
@@ -127,11 +127,11 @@ func (r *Result) SetCode(c icinga.ResultCode) {
 }
 
 func (r *Result) SetCounter(name string, val any) {
-	r.counter = append(r.counter, Value{Name: name, Value: val})
+	r.counter = append(r.counter, Data{Name: name, Value: val})
 }
 
 func (r *Result) SetStatus(name string, val any) {
-	r.stati = append(r.stati, Value{Name: name, Value: val})
+	r.stati = append(r.stati, Data{Name: name, Value: val})
 }
 
 func (r *Result) SetError(err error) {
