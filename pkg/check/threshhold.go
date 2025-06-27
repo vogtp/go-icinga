@@ -51,20 +51,21 @@ func newThreshhold(resultCode icinga.ResultCode, conf string) threshold {
 	return t
 }
 
-func (t *threshold) process(kv *Data, formatedValue string) icinga.ResultCode {
-	if len(t.label) > 0 && t.label != kv.Name {
+func (t *threshold) process(data *Data, formatedValue string) icinga.ResultCode {
+	if len(t.label) > 0 && t.label != data.Name {
 		return icinga.OK
 	}
-	kv.ResultCode = icinga.OK
+	data.ResultCode = icinga.OK
 	if strings.HasSuffix(formatedValue, "%") {
 		if !t.isPercent {
 			return icinga.OK
 		}
-		f, ok := parseFloat(kv.Value)
+		f, ok := parseFloat(data.Value)
 		if !ok {
-			slog.Debug("Cannot parse percent float threshhold value", "value", kv.Value, "formatedValue", formatedValue)
+			slog.Debug("Cannot parse percent float threshhold value", "value", data.Value, "formatedValue", formatedValue)
 			return icinga.OK
 		}
+		data.SetThreshold(t)
 		if t.val <= f {
 			return t.resultCode
 		}
@@ -78,19 +79,21 @@ func (t *threshold) process(kv *Data, formatedValue string) icinga.ResultCode {
 		if t.duration == 0 {
 			return icinga.OK
 		}
+		//kv.SetThreshold(t, d)
 		if t.duration <= d {
 			return t.resultCode
 		}
 		return icinga.OK
 	} else if t.duration != 0 {
-		slog.Debug("Cannot parse duration float threshhold value", "value", kv.Value, "formatedValue", formatedValue, "err", err)
+		slog.Debug("Cannot parse duration float threshhold value", "value", data.Value, "formatedValue", formatedValue, "err", err)
 		return icinga.OK
 	}
-	f, ok := parseFloat(kv.Value)
+	f, ok := parseFloat(data.Value)
 	if !ok {
-		slog.Debug("Cannot parse raw float threshhold value", "value", kv.Value, "formatedValue", formatedValue, "type", fmt.Sprintf("%T", kv.Value))
+		slog.Debug("Cannot parse raw float threshhold value", "value", data.Value, "formatedValue", formatedValue, "type", fmt.Sprintf("%T", data.Value))
 		return icinga.OK
 	}
+	data.SetThreshold(t)
 	if t.val <= f {
 		return t.resultCode
 	}

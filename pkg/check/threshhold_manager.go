@@ -48,8 +48,8 @@ func (tm ThreshholdsManager) Process() icinga.ResultCode {
 			resultCode = max(resultCode, rc)
 			crc = max(crc, rc)
 		}
-
-		tm.result.counter[i].ResultCode = crc
+		c.ResultCode = crc
+		tm.result.counter[i] = c
 	}
 	tm.result.code = max(resultCode, tm.result.code)
 	return resultCode

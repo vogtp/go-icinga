@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -14,9 +15,11 @@ import (
 )
 
 type Data struct {
-	Name       string
-	Value      any
-	ResultCode icinga.ResultCode
+	Name              string
+	Value             any
+	ResultCode        icinga.ResultCode
+	CriticalThreshold any
+	WaningThreshold   any
 }
 
 type Result struct {
@@ -70,7 +73,7 @@ func (r *Result) PrintExit() {
 	tm.Process()
 	for _, c := range r.counter {
 		fmtCnt := r.counterFormater(c.Name, c)
-		fmt.Fprintf(&pref, "%s%s=%v ", r.prefix, c.Name, fmtCnt)
+		fmt.Fprintf(&pref, "'%s%s'=%v%v ", r.prefix, c.Name, fmtCnt, getPrefDataThreshDisplay(c))
 		tw.AppendRow(table.Row{c.ResultCode.IcingaString(), c.Name, fmtCnt})
 	}
 	tw.SetColumnConfigs([]table.ColumnConfig{
@@ -114,6 +117,21 @@ func (r *Result) PrintExit() {
 	}
 }
 
+func getPrefDataThreshDisplay(d Data) string {
+	if d.WaningThreshold == nil && d.CriticalThreshold == nil {
+		return ""
+	}
+	w := d.WaningThreshold
+	if w == nil {
+		w = ""
+	}
+	c := d.CriticalThreshold
+	if c == nil {
+		c = ""
+	}
+	return fmt.Sprintf(";%v;%v", w, c)
+}
+
 func (r *Result) SetHeader(format string, a ...any) {
 	r.header = fmt.Sprintf(format, a...)
 }
@@ -140,5 +158,20 @@ func (r *Result) SetError(err error) {
 }
 
 func (d Data) String() string {
-	return fmt.Sprintf("%v",d.Value)
+	return fmt.Sprintf("%v", d.Value)
+}
+
+func (d *Data) SetThreshold(t *threshold) {
+	rt := reflect.TypeOf(d.Value).String()
+	var v any
+	if strings.HasPrefix(rt, "uint") || strings.HasPrefix(rt, "int") {
+		v = int(t.val)
+	} else {
+		v = t.val
+	}
+	if t.resultCode == icinga.CRITICAL {
+		d.CriticalThreshold = v
+	} else {
+		d.WaningThreshold = v
+	}
 }
