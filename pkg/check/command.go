@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	goicinga "github.com/vogtp/go-icinga"
 	"github.com/vogtp/go-icinga/pkg/director"
 	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/log"
@@ -33,6 +34,10 @@ func (c *Command) Execute() error {
 	return c.ExecuteContext(context.Background())
 }
 
+const (
+	versionFlag = "version"
+)
+
 func (c *Command) ExecuteContext(ctx context.Context) error {
 
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
@@ -45,6 +50,7 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 	ssh.Flags(flags, c.DefaultRemoteOn)
 	ThresholdFlags(flags)
 	director.Flags(flags)
+	flags.Bool(versionFlag, false, "Prints the version")
 	flags.VisitAll(func(f *pflag.Flag) {
 		if err := viper.BindPFlag(f.Name, f); err != nil {
 			panic(err)
@@ -54,6 +60,10 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 		c.preRun = c.PersistentPreRunE
 	}
 	c.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if viper.GetBool(versionFlag) {
+			fmt.Println(goicinga.Version())
+			os.Exit(0)
+		}
 		if c.preRun != nil {
 			if err := c.preRun(cmd, args); err != nil {
 				return err
