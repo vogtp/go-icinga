@@ -74,7 +74,7 @@ func (r *Result) PrintExit() {
 		tw.AppendRow(table.Row{c.ResultCode.IcingaString(), c.Name, fmtCnt})
 	}
 	tw.SetColumnConfigs([]table.ColumnConfig{
-		{Number: 2, Align: text.AlignRight},
+		{Number: 3, Align: text.AlignRight},
 	})
 	disp.WriteString(tw.Render())
 	if r.displayFormater != nil {
@@ -137,4 +137,8 @@ func (r *Result) SetStatus(name string, val any) {
 func (r *Result) SetError(err error) {
 	r.err = err
 	r.SetCode(icinga.WARNING)
+}
+
+func (d Data) String() string {
+	return fmt.Sprintf("%v",d.Value)
 }
