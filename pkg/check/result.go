@@ -166,7 +166,10 @@ func (d *Data) SetThreshold(t *threshold) {
 	var v any
 	if strings.HasPrefix(rt, "uint") || strings.HasPrefix(rt, "int") {
 		v = int(t.val)
+	} else if rt == "time.Duration" {
+		v = t.duration.Microseconds()
 	} else {
+		// fmt.Printf("type %v\n", rt)
 		v = t.val
 	}
 	if t.resultCode == icinga.CRITICAL {

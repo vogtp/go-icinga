@@ -74,12 +74,12 @@ func (t *threshold) process(data *Data, formatedValue string) icinga.ResultCode 
 	if t.isPercent {
 		return icinga.OK
 	}
-	d, err := time.ParseDuration(formatedValue)
-	if err == nil {
+
+	if d, err := time.ParseDuration(formatedValue); err == nil {
 		if t.duration == 0 {
 			return icinga.OK
 		}
-		//kv.SetThreshold(t, d)
+		data.SetThreshold(t)
 		if t.duration <= d {
 			return t.resultCode
 		}
