@@ -10,7 +10,7 @@ func CheckPrefix(p string) CheckResultOption {
 	}
 }
 
-func DisplayFormater(f func(counter map[string]any) string) CheckResultOption {
+func DisplayFormater(f func(counter map[string]Value) string) CheckResultOption {
 	return func(r *Result) {
 		r.displayFormater = f
 	}

@@ -13,10 +13,10 @@ import (
 	"github.com/vogtp/go-icinga/pkg/ssh"
 )
 
-type keyValue struct {
-	name       string
-	value      any
-	resultCode icinga.ResultCode
+type Value struct {
+	Name       string
+	Value      any
+	ResultCode icinga.ResultCode
 }
 
 type Result struct {
@@ -24,11 +24,11 @@ type Result struct {
 	prefix string
 
 	header  string
-	counter []keyValue
-	stati   []keyValue
+	counter []Value
+	stati   []Value
 
 	counterFormater func(name string, value any) string
-	displayFormater func(counter map[string]any) string
+	displayFormater func(counter map[string]Value) string
 
 	err  error
 	code icinga.ResultCode
@@ -37,8 +37,8 @@ type Result struct {
 func NewResult(name string, options ...CheckResultOption) *Result {
 	r := &Result{
 		name:            name,
-		stati:           make([]keyValue, 0),
-		counter:         make([]keyValue, 0),
+		stati:           make([]Value, 0),
+		counter:         make([]Value, 0),
 		counterFormater: func(name string, value any) string { return fmt.Sprintf("%v", value) },
 	}
 	for _, o := range options {
@@ -69,18 +69,18 @@ func (r *Result) PrintExit() {
 	tm := NewThreshholdsManager(r)
 	tm.Process()
 	for _, c := range r.counter {
-		fmtCnt := r.counterFormater(c.name, c.value)
-		fmt.Fprintf(&pref, "%s%s=%v ", r.prefix, c.name, fmtCnt)
-		tw.AppendRow(table.Row{c.resultCode.IcingaString(), c.name, fmtCnt})
+		fmtCnt := r.counterFormater(c.Name, c.Value)
+		fmt.Fprintf(&pref, "%s%s=%v ", r.prefix, c.Name, fmtCnt)
+		tw.AppendRow(table.Row{c.ResultCode.IcingaString(), c.Name, fmtCnt})
 	}
 	tw.SetColumnConfigs([]table.ColumnConfig{
 		{Number: 2, Align: text.AlignRight},
 	})
 	disp.WriteString(tw.Render())
 	if r.displayFormater != nil {
-		ctr := make(map[string]any, len(r.counter))
+		ctr := make(map[string]Value, len(r.counter))
 		for _, c := range r.counter {
-			ctr[c.name] = c.value
+			ctr[c.Name] = c
 		}
 		disp.Reset()
 		disp.WriteString(r.displayFormater(ctr))
@@ -90,7 +90,7 @@ func (r *Result) PrintExit() {
 	tw.SetStyle(style)
 	for _, s := range r.stati {
 		//fmt.Fprintf(&disp, "%s: %s\n", s.name, s.value)
-		tw.AppendRow(table.Row{s.name, s.value})
+		tw.AppendRow(table.Row{s.Name, s.Value})
 	}
 	disp.WriteString(tw.Render())
 
@@ -127,11 +127,11 @@ func (r *Result) SetCode(c icinga.ResultCode) {
 }
 
 func (r *Result) SetCounter(name string, val any) {
-	r.counter = append(r.counter, keyValue{name: name, value: val})
+	r.counter = append(r.counter, Value{Name: name, Value: val})
 }
 
 func (r *Result) SetStatus(name string, val any) {
-	r.stati = append(r.stati, keyValue{name: name, value: val})
+	r.stati = append(r.stati, Value{Name: name, Value: val})
 }
 
 func (r *Result) SetError(err error) {

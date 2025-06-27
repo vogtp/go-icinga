@@ -39,17 +39,17 @@ type ThreshholdsManager struct {
 func (tm ThreshholdsManager) Process() icinga.ResultCode {
 	resultCode := icinga.UNKNOWN
 	for i, c := range tm.result.counter {
-		crc := c.resultCode
+		crc := c.ResultCode
 		for _, t := range tm.thresholds {
-			rc := t.process(&c, tm.result.counterFormater(c.name, c.value))
+			rc := t.process(&c, tm.result.counterFormater(c.Name, c.Value))
 			if resultCode == icinga.UNKNOWN {
 				resultCode = rc
 			}
 			resultCode = max(resultCode, rc)
 			crc = max(crc, rc)
 		}
-		
-		tm.result.counter[i].resultCode = crc
+
+		tm.result.counter[i].ResultCode = crc
 	}
 	tm.result.code = max(resultCode, tm.result.code)
 	return resultCode

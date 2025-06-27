@@ -22,9 +22,9 @@ type threshold struct {
 
 func newThreshhold(resultCode icinga.ResultCode, conf string) threshold {
 	t := threshold{resultCode: resultCode}
-	splt := strings.Split(conf,":")
-	if len(splt) >1{
-		t.label=splt[0]
+	splt := strings.Split(conf, ":")
+	if len(splt) > 1 {
+		t.label = splt[0]
 		conf = splt[1]
 	}
 	if strings.HasSuffix(conf, "%") {
@@ -51,18 +51,18 @@ func newThreshhold(resultCode icinga.ResultCode, conf string) threshold {
 	return t
 }
 
-func (t *threshold) process(kv *keyValue, formatedValue string) icinga.ResultCode {
-	if len(t.label) > 0 && t.label != kv.name {
+func (t *threshold) process(kv *Value, formatedValue string) icinga.ResultCode {
+	if len(t.label) > 0 && t.label != kv.Name {
 		return icinga.OK
 	}
-	kv.resultCode = icinga.OK
+	kv.ResultCode = icinga.OK
 	if strings.HasSuffix(formatedValue, "%") {
 		if !t.isPercent {
 			return icinga.OK
 		}
-		f, ok := parseFloat(kv.value)
+		f, ok := parseFloat(kv.Value)
 		if !ok {
-			slog.Debug("Cannot parse percent float threshhold value", "value", kv.value, "formatedValue", formatedValue)
+			slog.Debug("Cannot parse percent float threshhold value", "value", kv.Value, "formatedValue", formatedValue)
 			return icinga.OK
 		}
 		if t.val <= f {
@@ -83,12 +83,12 @@ func (t *threshold) process(kv *keyValue, formatedValue string) icinga.ResultCod
 		}
 		return icinga.OK
 	} else if t.duration != 0 {
-		slog.Debug("Cannot parse duration float threshhold value", "value", kv.value, "formatedValue", formatedValue, "err", err)
+		slog.Debug("Cannot parse duration float threshhold value", "value", kv.Value, "formatedValue", formatedValue, "err", err)
 		return icinga.OK
 	}
-	f, ok := parseFloat(kv.value)
+	f, ok := parseFloat(kv.Value)
 	if !ok {
-		slog.Debug("Cannot parse raw float threshhold value", "value", kv.value, "formatedValue", formatedValue, "type", fmt.Sprintf("%T", kv.value))
+		slog.Debug("Cannot parse raw float threshhold value", "value", kv.Value, "formatedValue", formatedValue, "type", fmt.Sprintf("%T", kv.Value))
 		return icinga.OK
 	}
 	if t.val <= f {
