@@ -61,6 +61,9 @@ func (t *threshold) process(kv *keyValue, formatedValue string) icinga.ResultCod
 		}
 		return icinga.OK
 	}
+	if t.isPercent {
+		return icinga.OK
+	}
 	d, err := time.ParseDuration(formatedValue)
 	if err == nil {
 		if t.duration == 0 {
@@ -76,7 +79,7 @@ func (t *threshold) process(kv *keyValue, formatedValue string) icinga.ResultCod
 	}
 	f, ok := parseFloat(kv.value)
 	if !ok {
-		slog.Debug("Cannot parse raw float threshhold value", "value", kv.value, "formatedValue", formatedValue, "type", fmt.Sprintf("%T",kv.value))
+		slog.Debug("Cannot parse raw float threshhold value", "value", kv.value, "formatedValue", formatedValue, "type", fmt.Sprintf("%T", kv.value))
 		return icinga.OK
 	}
 	if t.val <= f {

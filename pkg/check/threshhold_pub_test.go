@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	critTresh = "90% 5s 22"
-	warnTresh = "80% 3s 15"
+	critTresh = "90% 5s 220"
+	warnTresh = "80% 3s 150"
 )
 
 func formater(name string, value any) string {
@@ -35,11 +35,11 @@ func TestRaw(t *testing.T) {
 	if rc := tm.Process(); rc != icinga.OK {
 		t.Errorf("ResultCode is %s not %s", rc, icinga.OK)
 	}
-	res.SetCounter("raw1", 15)
+	res.SetCounter("raw1", 150)
 	if rc := tm.Process(); rc != icinga.WARNING {
 		t.Errorf("ResultCode is %s not %s", rc, icinga.WARNING)
 	}
-	res.SetCounter("raw2", 22)
+	res.SetCounter("raw2", 220)
 	if rc := tm.Process(); rc != icinga.CRITICAL {
 		t.Errorf("ResultCode is %s not %s", rc, icinga.CRITICAL)
 	}
