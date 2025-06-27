@@ -13,5 +13,15 @@ const (
 )
 
 func (i ResultCode) IcingaString() string {
+	switch i {
+	case OK:
+		return "🟢"
+	case WARNING:
+		return "🟠"
+	case CRITICAL:
+		return "🔴"
+	case UNKNOWN:
+		return "🔵"
+	}
 	return fmt.Sprintf("[%s]", i.String())
 }
