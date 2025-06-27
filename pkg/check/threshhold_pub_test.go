@@ -16,7 +16,8 @@ const (
 	warnTresh = "80% 300us 150"
 )
 
-func formater(name string, value any) string {
+func formater(name string, val check.Value) string {
+	value := val.Value
 	if strings.HasPrefix(name, "cpu") {
 		return fmt.Sprintf("%v%%", value)
 	}
@@ -25,7 +26,6 @@ func formater(name string, value any) string {
 	}
 	return fmt.Sprintf("%v", value)
 }
-
 
 func TestLabel(t *testing.T) {
 	viper.Set(check.CriticalThreshFlag, "total:90% 5s 220")

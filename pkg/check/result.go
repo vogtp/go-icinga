@@ -27,7 +27,7 @@ type Result struct {
 	counter []Value
 	stati   []Value
 
-	counterFormater func(name string, value any) string
+	counterFormater func(name string, value Value) string
 	displayFormater func(counter map[string]Value) string
 
 	err  error
@@ -39,7 +39,7 @@ func NewResult(name string, options ...CheckResultOption) *Result {
 		name:            name,
 		stati:           make([]Value, 0),
 		counter:         make([]Value, 0),
-		counterFormater: func(name string, value any) string { return fmt.Sprintf("%v", value) },
+		counterFormater: func(name string, value Value) string { return fmt.Sprintf("%v", value.Value) },
 	}
 	for _, o := range options {
 		o(r)
@@ -69,7 +69,7 @@ func (r *Result) PrintExit() {
 	tm := NewThreshholdsManager(r)
 	tm.Process()
 	for _, c := range r.counter {
-		fmtCnt := r.counterFormater(c.Name, c.Value)
+		fmtCnt := r.counterFormater(c.Name, c)
 		fmt.Fprintf(&pref, "%s%s=%v ", r.prefix, c.Name, fmtCnt)
 		tw.AppendRow(table.Row{c.ResultCode.IcingaString(), c.Name, fmtCnt})
 	}

@@ -15,15 +15,15 @@ func DisplayFormater(f func(counter map[string]Value) string) CheckResultOption 
 		r.displayFormater = f
 	}
 }
-func CounterFormater(f func(name string, value any) string) CheckResultOption {
+func CounterFormater(f func(name string, value Value) string) CheckResultOption {
 	return func(r *Result) {
 		r.counterFormater = f
 	}
 }
 
 func PercentCounterFormater() CheckResultOption {
-	return CounterFormater(func(name string, value any) string {
-		f, ok := value.(float64)
+	return CounterFormater(func(name string, value Value) string {
+		f, ok := value.Value.(float64)
 		if !ok {
 			return fmt.Sprintf("%v", value)
 		}

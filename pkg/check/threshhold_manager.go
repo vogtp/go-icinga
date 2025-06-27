@@ -41,7 +41,7 @@ func (tm ThreshholdsManager) Process() icinga.ResultCode {
 	for i, c := range tm.result.counter {
 		crc := c.ResultCode
 		for _, t := range tm.thresholds {
-			rc := t.process(&c, tm.result.counterFormater(c.Name, c.Value))
+			rc := t.process(&c, tm.result.counterFormater(c.Name, c))
 			if resultCode == icinga.UNKNOWN {
 				resultCode = rc
 			}
