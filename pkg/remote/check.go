@@ -18,7 +18,7 @@ import (
 	"github.com/vogtp/go-icinga/pkg/hash"
 	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/log"
-	"github.com/vogtp/go-icinga/pkg/ssh"
+	"github.com/vogtp/go-icinga/pkg/remote/ssh"
 )
 
 type Session interface {
@@ -33,21 +33,29 @@ type client struct {
 	session Session
 }
 
+func create(ctx context.Context) (*client, error) {
+	c := client{
+		user: viper.GetString(UserFlag),
+		host: viper.GetString(HostFlag),
+	}
+	sess, err := ssh.New(ctx, c.user, c.host)
+	if err != nil {
+		return nil, fmt.Errorf("cannot open ssh session: %w", err)
+	}
+	c.session = sess
+	return &c, nil
+}
+
 func Check(cmd *cobra.Command, args []string) error {
 	log.Init()
 	if !ShouldRemoteRun() {
 		return nil
 	}
-	c := client{
-		user: viper.GetString(UserFlag),
-		host: viper.GetString(HostFlag),
-	}
-	sess, err := ssh.New(cmd.Context(), c.user, c.host)
+	c, err := create(cmd.Context())
 	if err != nil {
-		return fmt.Errorf("cannot open ssh session: %w", err)
+		return err
 	}
-	defer sess.Close()
-	c.session = sess
+	defer c.Close()
 	cmds := strings.Split(cmd.CommandPath(), " ")
 	cmds = append(cmds, args...)
 	cmd.Flags().Visit(func(f *pflag.Flag) {
@@ -147,4 +155,11 @@ func (c *client) exec(cmd string) (*Result, error) {
 		return r, fmt.Errorf("cannot parse remote reponse as json: %w", err)
 	}
 	return r, err
+}
+
+func (c *client) Close() {
+	if c.session == nil {
+		return
+	}
+	c.session.Close()
 }

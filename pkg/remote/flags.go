@@ -6,17 +6,17 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/vogtp/go-icinga/pkg/director"
-	"github.com/vogtp/go-icinga/pkg/ssh"
+	"github.com/vogtp/go-icinga/pkg/remote/ssh"
 )
 
 var ignoredFlags = []string{"help", HostFlag, UserFlag}
 
 const (
-	HostFlag        = "remote.host"
-	UserFlag        = "remote.user"
-	hashCheckFlag         = "hash.check"
-	HostDefault     = "$host.name$"
-	isRemoteRun           = "remote.is_remote"
+	HostFlag      = "remote.host"
+	UserFlag      = "remote.user"
+	hashCheckFlag = "hash.check"
+	HostDefault   = "$host.name$"
+	isRemoteRun   = "remote.is_remote"
 )
 
 func Flags(flags *pflag.FlagSet, defaultRemoteOn bool) {
