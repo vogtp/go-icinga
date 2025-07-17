@@ -24,6 +24,7 @@ import (
 type Session interface {
 	Run(cmd string) ([]byte, []byte, error)
 	Copy(ctx context.Context, local, remote string) error
+	Close()
 }
 
 type client struct {
@@ -41,11 +42,11 @@ func Check(cmd *cobra.Command, args []string) error {
 		user: viper.GetString(UserFlag),
 		host: viper.GetString(HostFlag),
 	}
-	sess, close, err := issh.New(cmd.Context(), c.user, c.host)
+	sess, err := issh.New(cmd.Context(), c.user, c.host)
 	if err != nil {
 		return fmt.Errorf("cannot open ssh session: %w", err)
 	}
-	defer close()
+	defer sess.Close()
 	c.session = sess
 	cmds := strings.Split(cmd.CommandPath(), " ")
 	cmds = append(cmds, args...)

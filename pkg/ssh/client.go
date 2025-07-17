@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 
 	scp "github.com/bramvdbogaerde/go-scp"
@@ -14,11 +15,11 @@ type Session struct {
 	sshClient *ssh.Client
 }
 
-func New(ctx context.Context, user string, host string) (*Session, func() error, error) {
+func New(ctx context.Context, user string, host string) (*Session, error) {
 
 	sshAuth, err := getSshAuth()
 	if err != nil {
-		return nil, nil, fmt.Errorf("no ssh auth: %w", err)
+		return nil, fmt.Errorf("no ssh auth: %w", err)
 	}
 
 	config := &ssh.ClientConfig{
@@ -28,14 +29,15 @@ func New(ctx context.Context, user string, host string) (*Session, func() error,
 	}
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", host), config)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to dial: %w", err)
+		return nil, fmt.Errorf("failed to dial: %w", err)
 	}
 	c := &Session{
 		sshClient: client,
 	}
-	return c, client.Close, nil
+	return c, nil
 }
-func (c *Session) Run( cmd string) ([]byte, []byte, error) {
+
+func (c *Session) Run(cmd string) ([]byte, []byte, error) {
 	session, err := c.sshClient.NewSession()
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create session: %w", err)
@@ -66,4 +68,13 @@ func (c *Session) Copy(ctx context.Context, local, remote string) error {
 		return fmt.Errorf("error while scp file %q: %w", remote, err)
 	}
 	return nil
+}
+
+func (c *Session) Close() {
+	if c.sshClient == nil {
+		return
+	}
+	if err := c.sshClient.Close(); err != nil {
+		slog.Warn("Error closing ssh client", "err", err)
+	}
 }
