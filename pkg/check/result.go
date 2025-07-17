@@ -58,19 +58,19 @@ func (r *Result) PrintExit() {
 	var ret strings.Builder
 	var disp strings.Builder
 	var pref strings.Builder
-	ret.WriteString(r.header)
-	if r.err != nil {
-		if ret.Len() > 0 {
-			ret.WriteString(" - ")
-		}
-		fmt.Fprintf(&ret, "Error: %v", r.err.Error())
-	}
 	tw := table.NewWriter()
 	style := table.StyleLight
 	style.HTML.EscapeText = true
 	tw.SetStyle(style)
 	tm := NewThreshholdsManager(r)
 	tm.Process()
+	ret.WriteString(fmt.Sprintf("%s %s",r.code.IcingaString(), r.header))
+	if r.err != nil {
+		if ret.Len() > 0 {
+			ret.WriteString(" - ")
+		}
+		fmt.Fprintf(&ret, "Error: %v", r.err.Error())
+	}
 	for _, c := range r.counter {
 		fmtCnt := r.counterFormater(c.Name, c)
 		fmt.Fprintf(&pref, "'%s%s'=%v%v ", r.prefix, c.Name, fmtCnt, getPrefDataThreshDisplay(c))
