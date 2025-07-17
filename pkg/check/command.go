@@ -15,7 +15,7 @@ import (
 	"github.com/vogtp/go-icinga/pkg/director"
 	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/log"
-	"github.com/vogtp/go-icinga/pkg/ssh"
+	"github.com/vogtp/go-icinga/pkg/remote"
 )
 
 type Command struct {
@@ -47,7 +47,7 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 
 	flags := c.PersistentFlags()
 	log.Flags(flags)
-	ssh.Flags(flags, c.DefaultRemoteOn)
+	remote.Flags(flags, c.DefaultRemoteOn)
 	ThresholdFlags(flags)
 	director.Flags(flags)
 	flags.Bool(versionFlag, false, "Prints the version")
@@ -74,7 +74,7 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 				return err
 			}
 		}
-		if err := ssh.CheckHash(); err != nil {
+		if err := remote.CheckHash(); err != nil {
 			return fmt.Errorf("cannot check hash: %w", err)
 		}
 		if err := c.generateDirectorConfig(cmd, args); err != nil {
@@ -83,7 +83,7 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 			return nil
 		}
 		//	fmt.Printf("ssh key: %s\n", viper.GetString("remote.sshkey"))
-		if err := ssh.RemoteCheck(cmd, args); err != nil {
+		if err := remote.Check(cmd, args); err != nil {
 			u, err2 := user.Current()
 			slog.Warn("Remote check error", "username", u.Name, "home", u.HomeDir, "errr", err2)
 			fmt.Printf("Remote run returned error: %v\n", err)

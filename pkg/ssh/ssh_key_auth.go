@@ -9,7 +9,7 @@ import (
 )
 
 func getSshAuth() ([]ssh.AuthMethod, error) {
-	filename := viper.GetString(remoteUserKey)
+	filename := viper.GetString(UserKeyFlag)
 	if len(filename) < 1 {
 		return nil, fmt.Errorf("please provide a ssh key file location: %s", filename)
 	}
@@ -18,7 +18,7 @@ func getSshAuth() ([]ssh.AuthMethod, error) {
 		return nil, err
 	}
 	var signer ssh.Signer
-	pw := viper.GetString(remoteUserKeyPass)
+	pw := viper.GetString(UserKeyPassFlag)
 	if len(pw) > 0 {
 		signer, err = ssh.ParsePrivateKeyWithPassphrase(ssh_key, []byte(pw))
 		if err != nil {

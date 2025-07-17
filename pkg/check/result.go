@@ -11,7 +11,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/log"
-	"github.com/vogtp/go-icinga/pkg/ssh"
+	"github.com/vogtp/go-icinga/pkg/remote"
 )
 
 type Data struct {
@@ -101,12 +101,12 @@ func (r *Result) PrintExit() {
 		fmt.Fprintf(&disp, "\nLog:\n%s\n", log.Buffer.String())
 	}
 
-	isRemote := ssh.IsRemoteRun()
+	isRemote := remote.IsRemoteRun()
 	slog.Debug("Is this command running by ssh?", "isRemote", isRemote)
 	o := fmt.Sprintf("%s\n\n%s|%s\n", ret.String(), disp.String(), pref.String())
 
 	if isRemote {
-		sr := ssh.Result{Out: o, Code: r.code}
+		sr := remote.Result{Out: o, Code: r.code}
 		sr.Print()
 	} else {
 		fmt.Print(o)
