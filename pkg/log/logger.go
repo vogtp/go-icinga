@@ -1,7 +1,9 @@
 package log
 
 import (
+	"io"
 	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -10,6 +12,7 @@ import (
 
 const (
 	verbose = "verbose"
+	debug   = "debug"
 )
 
 var (
@@ -23,12 +26,18 @@ func Init() *slog.Logger {
 		return logger
 	}
 	logOpts := slog.HandlerOptions{
-		Level: slog.LevelInfo,
+		Level: slog.LevelWarn,
 	}
+	var w io.Writer
+	w = &Buffer
 	if viper.GetBool(verbose) {
-		logOpts.Level = slog.LevelDebug
+		logOpts.Level = slog.LevelInfo
 	}
-	handler := slog.NewTextHandler(&Buffer, &logOpts)
+	if viper.GetBool(debug) {
+		logOpts.Level = slog.LevelDebug
+		w = io.MultiWriter(&Buffer, os.Stdout)
+	}
+	handler := slog.NewTextHandler(w, &logOpts)
 	logger = slog.New(handler)
 	slog.SetDefault(logger)
 	if viper.GetBool(verbose) {
@@ -38,5 +47,6 @@ func Init() *slog.Logger {
 }
 
 func Flags(flags *pflag.FlagSet) {
-	flags.Bool(verbose, false, "Log Debug information")
+	flags.Bool(verbose, false, "Log verbose information")
+	flags.Bool(debug, false, "Log Debug information")
 }
