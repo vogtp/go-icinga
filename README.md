@@ -3,7 +3,7 @@
 ## director
 
 Generate director basket configs from a cobra.Command:
-    
+
     func init() {
         testCmd.Flags().Bool("testFlagBool", false, "A boolean test flag")
         testCmd.Flags().String("testFlagString", "", "A string test flag")
@@ -32,4 +32,4 @@ Generate director basket configs from a cobra.Command:
 
 This can be used as follows:
 
-    testCmd  --icinga.director | icingacli director basket restore
+    testCmd  --icinga.director.import
