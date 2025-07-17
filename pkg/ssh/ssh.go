@@ -51,7 +51,7 @@ func RemoteCheck(cmd *cobra.Command, args []string) error {
 
 	r, err := runRemote(cmd.Context(), cmds)
 	if err != nil {
-		slog.Info("Remote error", "err", err, "result", r)
+		slog.Info("Remote run error", "err", err, "result", r)
 		if log.Buffer.Len() > 0 {
 			fmt.Printf("Log:\n%s\n", log.Buffer.String())
 		}
@@ -94,7 +94,7 @@ func CheckHash() error {
 	return nil
 }
 
-func runRemote(ctx context.Context, cmd []string) (*Result, error) {
+func runRemote(_ context.Context, cmd []string) (*Result, error) {
 	if len(cmd) < 1 {
 		return nil, fmt.Errorf("no command given: %v", cmd)
 	}
