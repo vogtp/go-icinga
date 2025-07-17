@@ -18,7 +18,7 @@ import (
 	"github.com/vogtp/go-icinga/pkg/hash"
 	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/log"
-	issh "github.com/vogtp/go-icinga/pkg/ssh"
+	"github.com/vogtp/go-icinga/pkg/ssh"
 )
 
 type Session interface {
@@ -42,7 +42,7 @@ func Check(cmd *cobra.Command, args []string) error {
 		user: viper.GetString(UserFlag),
 		host: viper.GetString(HostFlag),
 	}
-	sess, err := issh.New(cmd.Context(), c.user, c.host)
+	sess, err := ssh.New(cmd.Context(), c.user, c.host)
 	if err != nil {
 		return fmt.Errorf("cannot open ssh session: %w", err)
 	}
