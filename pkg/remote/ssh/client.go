@@ -15,16 +15,19 @@ type Session struct {
 	sshClient *ssh.Client
 }
 
-func New(ctx context.Context, user string, host string) (*Session, error) {
+func New(ctx context.Context, host string, user string, pass string) (*Session, error) {
 
-	sshAuth, err := getSshAuth()
+	authMethods, err := getSshAuth()
 	if err != nil {
 		return nil, fmt.Errorf("no ssh auth: %w", err)
+	}
+	if len(pass) > 0 {
+		authMethods = append(authMethods, ssh.Password(pass))
 	}
 
 	config := &ssh.ClientConfig{
 		User:            user,
-		Auth:            sshAuth,
+		Auth:            authMethods,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", host), config)

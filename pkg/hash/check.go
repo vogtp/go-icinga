@@ -2,10 +2,11 @@ package hash
 
 import (
 	"fmt"
+	"os"
 )
 
 func Check(should string) error {
-	is, err := Calc()
+	is, err := Calc(os.Args[0])
 	if err != nil {
 		return fmt.Errorf("cannot calculate own hash: %w", err)
 	}

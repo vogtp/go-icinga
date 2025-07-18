@@ -18,6 +18,7 @@ import (
 	"github.com/vogtp/go-icinga/pkg/hash"
 	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/log"
+	"github.com/vogtp/go-icinga/pkg/remote/powershell"
 	"github.com/vogtp/go-icinga/pkg/remote/ssh"
 )
 
@@ -38,7 +39,16 @@ func create(ctx context.Context) (*client, error) {
 		user: viper.GetString(UserFlag),
 		host: viper.GetString(HostFlag),
 	}
-	sess, err := ssh.New(ctx, c.user, c.host)
+	pass := viper.GetString(PasswordFlag)
+	if viper.GetBool(PsRemotingFlag) {
+		sess, err := powershell.New(ctx, c.host, c.user, pass)
+		if err != nil {
+			return nil, fmt.Errorf("cannot open powershell session: %w", err)
+		}
+		c.session = sess
+		return &c, nil
+	}
+	sess, err := ssh.New(ctx, c.host, c.user, pass)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open ssh session: %w", err)
 	}
@@ -77,13 +87,16 @@ func Check(cmd *cobra.Command, args []string) error {
 			cmds = append(cmds, fmt.Sprintf("--%s", f.Name), val)
 		}
 	})
-
+	if viper.GetBool(WinRemoteFlag) {
+		cmds[0] = fmt.Sprintf("%s.exe", cmds[0])
+	}
 	r, err := c.runRemote(cmd.Context(), cmds)
 	if err != nil {
 		slog.Info("Remote run error", "err", err, "result", r)
 		if log.Buffer.Len() > 0 {
 			fmt.Printf("Log:\n%s\n", log.Buffer.String())
 		}
+		r = &Result{HashMismatch: true}
 	}
 	if r.HashMismatch {
 		if err := c.copyRemote(cmd.Context(), cmds); err != nil {
@@ -113,12 +126,15 @@ func (c *client) runRemote(_ context.Context, cmd []string) (*Result, error) {
 		return nil, fmt.Errorf("no command given: %v", cmd)
 	}
 
-	h, err := hash.Calc()
+	h, err := hash.Calc(getRemoteExecutableName())
 	if err != nil {
 		return nil, fmt.Errorf("cannot calculate my hash: %w", err)
 	}
 
 	cmdLine := fmt.Sprintf("./%s --%s --%s %q", strings.Join(cmd, " "), isRemoteRun, hashCheckFlag, h)
+	if viper.GetBool(WinRemoteFlag) {
+		cmdLine = cmdLine[2:]
+	}
 	slog.Debug("Executing remote command", "cmd", cmdLine, "host", c.host, "user", c.user)
 	r, err := c.exec(cmdLine)
 	if err != nil {
@@ -130,7 +146,7 @@ func (c *client) runRemote(_ context.Context, cmd []string) (*Result, error) {
 func (c *client) copyRemote(ctx context.Context, cmd []string) error {
 
 	remote := cmd[0]
-	local := os.Args[0]
+	local := getRemoteExecutableName()
 	slog.Info("remote version is outdated: copy local to remote ", "local", local, "remote", remote)
 	if err := c.session.Copy(ctx, local, remote); err != nil {
 		return err
@@ -152,9 +168,17 @@ func (c *client) exec(cmd string) (*Result, error) {
 			fmt.Printf("Log:\n%s\n", log.Buffer.String())
 		}
 		r.HashMismatch = true
+		fmt.Println(string(stdo))
 		return r, fmt.Errorf("cannot parse remote reponse as json: %w", err)
 	}
 	return r, err
+}
+
+func getRemoteExecutableName() string {
+	if viper.GetBool(WinRemoteFlag) {
+		return fmt.Sprintf("%s.exe", os.Args[0])
+	}
+	return os.Args[0]
 }
 
 func (c *client) Close() {

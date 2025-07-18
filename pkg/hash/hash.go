@@ -8,9 +8,9 @@ import (
 )
 
 // Calc calculate the file hash
-func Calc() (string, error) {
+func Calc(filename string) (string, error) {
 	//defer func(t time.Time) {fmt.Printf("Hashing took %v\n", time.Since(t))}(time.Now())
-	f, err := os.Open(os.Args[0])
+	f, err := os.Open(filename)
 	if err != nil {
 		return "", err
 	}

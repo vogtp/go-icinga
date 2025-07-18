@@ -75,17 +75,20 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 			}
 		}
 		if err := remote.CheckHash(); err != nil {
+			fmt.Println(log.Buffer.String())
 			return fmt.Errorf("cannot check hash: %w", err)
 		}
 		if err := c.generateDirectorConfig(cmd, args); err != nil {
+			fmt.Println(log.Buffer.String())
 			fmt.Printf("Icinga director import error: %v\n", err)
 			os.Exit(1)
 			return nil
 		}
 		//	fmt.Printf("ssh key: %s\n", viper.GetString("remote.sshkey"))
 		if err := remote.Check(cmd, args); err != nil {
-			u, err2 := user.Current()
-			slog.Warn("Remote check error", "username", u.Name, "home", u.HomeDir, "errr", err2)
+			u, _ := user.Current()
+			slog.Warn("Remote check error", "username", u.Name, "home", u.HomeDir, "err", err)
+			fmt.Println(log.Buffer.String())
 			fmt.Printf("Remote run returned error: %v\n", err)
 			os.Exit(int(icinga.UNKNOWN))
 			return nil
