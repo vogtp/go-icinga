@@ -23,7 +23,7 @@ import (
 )
 
 type Session interface {
-	Run(cmd string) ([]byte, []byte, error)
+	Run(ctx context.Context, cmd string) ([]byte, []byte, error)
 	Copy(ctx context.Context, local, remote string) error
 	Close()
 }
@@ -98,7 +98,8 @@ func Check(cmd *cobra.Command, args []string) error {
 		}
 		r = &Result{HashMismatch: true}
 	}
-	if r.HashMismatch {
+	if r.HashMismatch && false {
+		slog.Debug("Copy myself to remote since there is a hash missmatch")
 		if err := c.copyRemote(cmd.Context(), cmds); err != nil {
 			return fmt.Errorf("cannot copy to remote: %w", err)
 		}
@@ -121,7 +122,7 @@ func Check(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (c *client) runRemote(_ context.Context, cmd []string) (*Result, error) {
+func (c *client) runRemote(ctx context.Context, cmd []string) (*Result, error) {
 	if len(cmd) < 1 {
 		return nil, fmt.Errorf("no command given: %v", cmd)
 	}
@@ -136,7 +137,7 @@ func (c *client) runRemote(_ context.Context, cmd []string) (*Result, error) {
 		cmdLine = cmdLine[2:]
 	}
 	slog.Debug("Executing remote command", "cmd", cmdLine, "host", c.host, "user", c.user)
-	r, err := c.exec(cmdLine)
+	r, err := c.exec(ctx, cmdLine)
 	if err != nil {
 		return r, fmt.Errorf("%q returned: %w", cmdLine, err)
 	}
@@ -154,14 +155,15 @@ func (c *client) copyRemote(ctx context.Context, cmd []string) error {
 	return nil
 }
 
-func (c *client) exec(cmd string) (*Result, error) {
-	stdo, stde, err := c.session.Run(cmd)
+func (c *client) exec(ctx context.Context, cmd string) (*Result, error) {
+	stdo, stde, err := c.session.Run(ctx, cmd)
 	if len(stde) > 0 {
 		fmt.Fprintln(os.Stderr, string(stde))
 	}
 	if err != nil {
 		return nil, err
 	}
+	stdo = []byte(strings.TrimSpace(string(stdo)))
 	r := &Result{}
 	if err := json.Unmarshal(stdo, &r); err != nil {
 		if log.Buffer.Len() > 0 {
@@ -175,7 +177,7 @@ func (c *client) exec(cmd string) (*Result, error) {
 }
 
 func getRemoteExecutableName() string {
-	if viper.GetBool(WinRemoteFlag) {
+	if viper.GetBool(WinRemoteFlag) && !strings.HasSuffix(os.Args[0], ".exe") {
 		return fmt.Sprintf("%s.exe", os.Args[0])
 	}
 	return os.Args[0]

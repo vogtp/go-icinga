@@ -40,7 +40,7 @@ func New(ctx context.Context, host string, user string, pass string) (*Session, 
 	return c, nil
 }
 
-func (c *Session) Run(cmd string) ([]byte, []byte, error) {
+func (c *Session) Run(_ context.Context, cmd string) ([]byte, []byte, error) {
 	session, err := c.sshClient.NewSession()
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create session: %w", err)

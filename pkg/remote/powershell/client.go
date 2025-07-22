@@ -4,15 +4,25 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
+	"strings"
+	"time"
 
+	"github.com/spf13/viper"
+	"github.com/vogtp/go-icinga/pkg/log"
 	ps "github.com/vogtp/go-powershell"
 	"github.com/vogtp/go-powershell/backend"
 	"github.com/vogtp/go-powershell/middleware"
 )
 
 type Session struct {
-	shell   ps.Shell
-	session middleware.Middleware
+	shell       ps.Shell
+	session     middleware.Middleware
+	debugBuffer strings.Builder
+}
+
+func remotePath() string {
+	return `C:\Program Files\WindowsPowerShell\Modules\UNIBAS.JEA.WSH\0.5.0\Public\`
 }
 
 func New(ctx context.Context, host string, user string, pass string) (*Session, error) {
@@ -40,6 +50,9 @@ func New(ctx context.Context, host string, user string, pass string) (*Session, 
 		shell:   shell,
 		session: session,
 	}
+	if viper.GetBool(log.Debug) {
+		fmt.Fprintf(&s.debugBuffer, "Started: %s\n", time.Now().Format(time.RFC3339))
+	}
 	return s, nil
 }
 
@@ -55,8 +68,11 @@ func New(ctx context.Context, host string, user string, pass string) (*Session, 
 // 	fmt.Printf("OUT:%s\nErr:%s\n\n", o, e)
 // }
 
-func (c *Session) Run(cmd string) ([]byte, []byte, error) {
-	stdout, stderr, err := c.session.Execute(cmd)
+func (c *Session) Run(ctx context.Context, cmd string) ([]byte, []byte, error) {
+	if viper.GetBool(log.Debug) {
+		fmt.Fprintln(&c.debugBuffer, cmd)
+	}
+	stdout, stderr, err := c.session.Execute(ctx, fmt.Sprintf("%s%s", remotePath(), cmd))
 	if err != nil {
 		return []byte(stdout), []byte(stderr), err
 	}
@@ -64,7 +80,7 @@ func (c *Session) Run(cmd string) ([]byte, []byte, error) {
 }
 
 func (c *Session) Copy(ctx context.Context, local, remote string) error {
-	return c.session.Copy(fmt.Sprintf("%s.exe", local), fmt.Sprintf("c:\\%s.exe", remote))
+	return c.session.Copy(ctx, fmt.Sprintf("%s", local), fmt.Sprintf("%s%s", remotePath(), remote))
 }
 
 func (c *Session) Close() {
@@ -73,4 +89,13 @@ func (c *Session) Close() {
 	}
 	c.session.Exit()
 	slog.Info("Closed powershell session")
+	if viper.GetBool(log.Debug) {
+		fmt.Fprintf(&c.debugBuffer, "Stopped: %s\n", time.Now().Format(time.RFC3339))
+		f, err := os.OpenFile("ps_run.out", os.O_APPEND, 0755)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		fmt.Sprintln(f, c.debugBuffer.String())
+	}
 }
