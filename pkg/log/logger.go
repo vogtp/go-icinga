@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	verbose = "verbose"
-	debug   = "debug"
+	Verbose = "verbose"
+	Debug   = "debug"
 )
 
 var (
@@ -30,23 +30,23 @@ func Init() *slog.Logger {
 	}
 	var w io.Writer
 	w = &Buffer
-	if viper.GetBool(verbose) {
+	if viper.GetBool(Verbose) {
 		logOpts.Level = slog.LevelInfo
 	}
-	if viper.GetBool(debug) {
+	if viper.GetBool(Debug) {
 		logOpts.Level = slog.LevelDebug
 		w = io.MultiWriter(&Buffer, os.Stdout)
 	}
 	handler := slog.NewTextHandler(w, &logOpts)
 	logger = slog.New(handler)
 	slog.SetDefault(logger)
-	if viper.GetBool(verbose) {
+	if viper.GetBool(Verbose) {
 		slog.Debug("Logging verbose")
 	}
 	return logger
 }
 
 func Flags(flags *pflag.FlagSet) {
-	flags.Bool(verbose, false, "Log verbose information")
-	flags.Bool(debug, false, "Log Debug information")
+	flags.Bool(Verbose, false, "Log verbose information")
+	flags.Bool(Debug, false, "Log Debug information")
 }
