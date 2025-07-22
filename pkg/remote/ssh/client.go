@@ -54,6 +54,8 @@ func (c *Session) Run(_ context.Context, cmd string) ([]byte, []byte, error) {
 	return stdo.Bytes(), stde.Bytes(), err
 }
 
+func (Session) CanCopy() bool { return true }
+
 func (c *Session) Copy(ctx context.Context, local, remote string) error {
 	client, err := scp.NewClientBySSH(c.sshClient)
 	if err != nil {

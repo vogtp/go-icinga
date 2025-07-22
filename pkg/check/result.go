@@ -64,7 +64,7 @@ func (r *Result) PrintExit() {
 	tw.SetStyle(style)
 	tm := NewThreshholdsManager(r)
 	tm.Process()
-	ret.WriteString(fmt.Sprintf("%s %s",r.code.IcingaString(), r.header))
+	ret.WriteString(fmt.Sprintf("%s %s", r.code.IcingaString(), r.header))
 	if r.err != nil {
 		if ret.Len() > 0 {
 			ret.WriteString(" - ")
@@ -106,7 +106,7 @@ func (r *Result) PrintExit() {
 	o := fmt.Sprintf("%s\n\n%s|%s\n", ret.String(), disp.String(), pref.String())
 
 	if isRemote {
-		sr := remote.Result{Out: o, Code: r.code}
+		sr := remote.Result{Out: []byte(o), Code: r.code}
 		sr.Print()
 	} else {
 		fmt.Print(o)

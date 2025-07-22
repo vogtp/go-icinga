@@ -17,6 +17,7 @@ const (
 	PasswordFlag   = "remote.password"
 	PsRemotingFlag = "remote.powershell"
 	WinRemoteFlag  = "remote.windows"
+	RemotePath     = "remote.path"
 	hashCheckFlag  = "hash.check"
 	HostDefault    = "$host.name$"
 	isRemoteRun    = "remote.is_remote"
@@ -30,6 +31,7 @@ func Flags(flags *pflag.FlagSet, defaultRemoteOn bool) {
 	flags.String(HostFlag, h, "Remote host to run the command on")
 	flags.String(UserFlag, "root", "Remote user name")
 	flags.String(PasswordFlag, "", "Remote user password")
+	flags.String(RemotePath, ".", "Remote path for syscheck")
 	flags.String(hashCheckFlag, "", "check the hash")
 	flags.Bool(PsRemotingFlag, false, "Use powershell remoting instead of ssh")
 	flags.Bool(WinRemoteFlag, false, "Is the remote system a windows system?")
@@ -47,7 +49,7 @@ func Flags(flags *pflag.FlagSet, defaultRemoteOn bool) {
 func ShouldRemoteRun() bool {
 	rh := viper.GetString(HostFlag)
 	shouldRunRemote := len(rh) > 0 && rh != HostDefault
-	slog.Debug("Should the command run remote", "shouldRunRemote", shouldRunRemote, "remoteHost", rh, "remoteHostDefault", HostDefault)
+	slog.Info("Should the command run remote", "shouldRunRemote", shouldRunRemote, "remoteHost", rh, "remoteHostDefault", HostDefault)
 	return shouldRunRemote
 }
 

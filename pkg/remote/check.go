@@ -9,6 +9,7 @@ import (
 	"html"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -25,6 +26,7 @@ import (
 type Session interface {
 	Run(ctx context.Context, cmd string) ([]byte, []byte, error)
 	Copy(ctx context.Context, local, remote string) error
+	CanCopy() bool
 	Close()
 }
 
@@ -72,6 +74,7 @@ func Check(cmd *cobra.Command, args []string) error {
 		if slices.Contains(ignoredFlags, f.Name) {
 			return
 		}
+		slog.Debug("Adding flag to remote call", "flag", f.Name)
 		val := f.Value.String()
 		if strings.HasSuffix(f.Value.Type(), "Slice") {
 			val = strings.ReplaceAll(val, "[", "")
@@ -92,14 +95,15 @@ func Check(cmd *cobra.Command, args []string) error {
 	}
 	r, err := c.runRemote(cmd.Context(), cmds)
 	if err != nil {
-		slog.Info("Remote run error", "err", err, "result", r)
-		if log.Buffer.Len() > 0 {
-			fmt.Printf("Log:\n%s\n", log.Buffer.String())
-		}
-		r = &Result{HashMismatch: true}
+		checkHash := c.session.CanCopy()
+		slog.Info("Remote run error", "err", err, "result", r, "checkHash", checkHash)
+		// if log.Buffer.Len() > 0 {
+		// 	fmt.Printf("Log:\n%s\n", log.Buffer.String())
+		// }
+		r = &Result{HashMismatch: checkHash}
 	}
-	if r.HashMismatch && false {
-		slog.Debug("Copy myself to remote since there is a hash missmatch")
+	if r.HashMismatch {
+		slog.Info("Copy myself to remote since there is a hash missmatch")
 		if err := c.copyRemote(cmd.Context(), cmds); err != nil {
 			return fmt.Errorf("cannot copy to remote: %w", err)
 		}
@@ -108,11 +112,12 @@ func Check(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("run remote after remote copy: %w", err)
 		}
 	}
-	out := r.Out
+	out := string(r.Out)
 	if log.Buffer.Len() > 0 {
 		out = strings.ReplaceAll(out, "|", fmt.Sprintf("\nLocal Log:\n%s|", html.EscapeString(log.Buffer.String())))
 	}
 	if len(out) < 1 {
+		slog.Warn("No output", "result", r)
 		fmt.Printf("Log:\n%s\n", log.Buffer.String())
 		os.Exit(int(icinga.UNKNOWN))
 	}
@@ -122,21 +127,30 @@ func Check(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+func remotePath() string {
+	return viper.GetString(RemotePath)
+}
+
 func (c *client) runRemote(ctx context.Context, cmd []string) (*Result, error) {
 	if len(cmd) < 1 {
 		return nil, fmt.Errorf("no command given: %v", cmd)
 	}
 
-	h, err := hash.Calc(getRemoteExecutableName())
+	h, err := hash.Calc(getLocalExecutableName())
 	if err != nil {
 		return nil, fmt.Errorf("cannot calculate my hash: %w", err)
 	}
-
-	cmdLine := fmt.Sprintf("./%s --%s --%s %q", strings.Join(cmd, " "), isRemoteRun, hashCheckFlag, h)
+	path := "."
 	if viper.GetBool(WinRemoteFlag) {
-		cmdLine = cmdLine[2:]
+		path = remotePath()
 	}
-	slog.Debug("Executing remote command", "cmd", cmdLine, "host", c.host, "user", c.user)
+	cmdLine := fmt.Sprintf("%s/%s --%s", path, strings.Join(cmd, " "), isRemoteRun)
+
+	if c.session.CanCopy() {
+		// powershell remoting does not support copy
+		cmdLine = fmt.Sprintf("%s --%s %q", cmdLine, hashCheckFlag, h)
+	}
+	slog.Info("Executing remote command", "cmd", cmdLine, "host", c.host, "user", c.user)
 	r, err := c.exec(ctx, cmdLine)
 	if err != nil {
 		return r, fmt.Errorf("%q returned: %w", cmdLine, err)
@@ -146,8 +160,8 @@ func (c *client) runRemote(ctx context.Context, cmd []string) (*Result, error) {
 
 func (c *client) copyRemote(ctx context.Context, cmd []string) error {
 
-	remote := cmd[0]
-	local := getRemoteExecutableName()
+	remote := getRemoteExecutableName()
+	local := getLocalExecutableName()
 	slog.Info("remote version is outdated: copy local to remote ", "local", local, "remote", remote)
 	if err := c.session.Copy(ctx, local, remote); err != nil {
 		return err
@@ -163,6 +177,14 @@ func (c *client) exec(ctx context.Context, cmd string) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// jdata, err := base64.StdEncoding.DecodeString(string(stdo))
+	// if err != nil {
+	// 	slog.Warn("Cannot decode base64", "err", err, "raw", string(stdo))
+	// 	jdata = stdo
+	// 	err = nil
+	// }
+	//stdo = []byte(strings.TrimSpace(string(stdo)))
 	stdo = []byte(strings.TrimSpace(string(stdo)))
 	r := &Result{}
 	if err := json.Unmarshal(stdo, &r); err != nil {
@@ -171,16 +193,27 @@ func (c *client) exec(ctx context.Context, cmd string) (*Result, error) {
 		}
 		r.HashMismatch = true
 		fmt.Println(string(stdo))
-		return r, fmt.Errorf("cannot parse remote reponse as json: %w", err)
+		//slog.Warn("Cannot parse remote json response", "err", err, "text", string(stdo))
+		return r, fmt.Errorf("cannot parse remote reponse as json: %w >%s<", err, stdo)
 	}
 	return r, err
 }
 
-func getRemoteExecutableName() string {
-	if viper.GetBool(WinRemoteFlag) && !strings.HasSuffix(os.Args[0], ".exe") {
-		return fmt.Sprintf("%s.exe", os.Args[0])
+func getLocalExecutableName() string {
+	cmd := os.Args[0]
+	if viper.GetBool(WinRemoteFlag) && !strings.HasSuffix(cmd, ".exe") {
+		return fmt.Sprintf("%s.exe", cmd)
 	}
-	return os.Args[0]
+	return cmd
+}
+
+func getRemoteExecutableName() string {
+	cmd := filepath.Base(os.Args[0])
+	cmd = fmt.Sprintf("%s/%s", remotePath(), cmd)
+	if viper.GetBool(WinRemoteFlag) && !strings.HasSuffix(cmd, ".exe") {
+		return fmt.Sprintf("%s.exe", cmd)
+	}
+	return cmd
 }
 
 func (c *client) Close() {
