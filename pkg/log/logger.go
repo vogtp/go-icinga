@@ -35,7 +35,7 @@ func Init() *slog.Logger {
 		logOpts.Level = slog.LevelInfo
 	}
 	if viper.GetBool(Debug) {
-		fmt.Println("******************** THIS BREAKS REMOTE RUNS... ********************")
+		fmt.Fprintln(&Buffer, "******************** THIS BREAKS REMOTE RUNS... ********************")
 		logOpts.Level = slog.LevelDebug
 		w = io.MultiWriter(&Buffer, os.Stdout)
 	}

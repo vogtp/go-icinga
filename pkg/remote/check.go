@@ -136,10 +136,6 @@ func (c *client) runRemote(ctx context.Context, cmd []string) (*Result, error) {
 		return nil, fmt.Errorf("no command given: %v", cmd)
 	}
 
-	h, err := hash.Calc(getLocalExecutableName())
-	if err != nil {
-		return nil, fmt.Errorf("cannot calculate my hash: %w", err)
-	}
 	path := "."
 	if viper.GetBool(WinRemoteFlag) {
 		path = remotePath()
@@ -147,7 +143,10 @@ func (c *client) runRemote(ctx context.Context, cmd []string) (*Result, error) {
 	cmdLine := fmt.Sprintf("%s/%s --%s", path, strings.Join(cmd, " "), isRemoteRun)
 
 	if c.session.CanCopy() {
-		// powershell remoting does not support copy
+		h, err := hash.Calc(getLocalExecutableName())
+		if err != nil {
+			return nil, fmt.Errorf("cannot calculate my hash: %w", err)
+		}
 		cmdLine = fmt.Sprintf("%s --%s %q", cmdLine, hashCheckFlag, h)
 	}
 	slog.Info("Executing remote command", "cmd", cmdLine, "host", c.host, "user", c.user)

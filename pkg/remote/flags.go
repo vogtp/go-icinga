@@ -6,10 +6,11 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/vogtp/go-icinga/pkg/director"
+	"github.com/vogtp/go-icinga/pkg/log"
 	"github.com/vogtp/go-icinga/pkg/remote/ssh"
 )
 
-var ignoredFlags = []string{"help", HostFlag, UserFlag, PasswordFlag, PsRemotingFlag}
+var ignoredFlags = []string{"help", log.Debug, HostFlag, UserFlag, PasswordFlag, PsRemotingFlag, WinRemoteFlag}
 
 const (
 	HostFlag       = "remote.host"
@@ -47,6 +48,9 @@ func Flags(flags *pflag.FlagSet, defaultRemoteOn bool) {
 
 // ShouldRemoteRun idicates if the command should be run remotely
 func ShouldRemoteRun() bool {
+	if viper.GetBool(isRemoteRun){
+		return false
+	}
 	rh := viper.GetString(HostFlag)
 	shouldRunRemote := len(rh) > 0 && rh != HostDefault
 	slog.Info("Should the command run remote", "shouldRunRemote", shouldRunRemote, "remoteHost", rh, "remoteHostDefault", HostDefault)
