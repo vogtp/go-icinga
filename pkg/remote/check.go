@@ -42,7 +42,7 @@ func create(ctx context.Context) (*client, error) {
 		host: viper.GetString(HostFlag),
 	}
 	pass := viper.GetString(PasswordFlag)
-	if viper.GetBool(PsRemotingFlag) {
+	if viper.GetBool(powershell.RemotingFlag) {
 		sess, err := powershell.New(ctx, c.host, c.user, pass)
 		if err != nil {
 			return nil, fmt.Errorf("cannot open powershell session: %w", err)
