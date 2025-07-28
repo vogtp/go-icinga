@@ -42,7 +42,7 @@ func (c *Session) openRemote() {
 	if slog.Default().Enabled(context.Background(), slog.LevelDebug) {
 		c.run("klist -l")
 	}
-	jeaConfigName := viper.GetString(JeaFlag)
+	jeaConfigName := viper.GetString(jeaFlag)
 	if len(jeaConfigName) > 0 {
 		jeaConfigName = fmt.Sprintf("-ConfigurationName '%s'", jeaConfigName)
 		slog.Info("Using JEA", "configuration", jeaConfigName)

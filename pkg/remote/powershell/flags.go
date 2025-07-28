@@ -4,14 +4,14 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var IgnoredFlags = []string{RemotingFlag,  JeaFlag}
+var IgnoredFlags = []string{RemotingFlag, jeaFlag}
 
 const (
 	RemotingFlag = "remote.powershell"
-	JeaFlag        = "remote.jea"
+	jeaFlag      = "remote.jea"
 )
 
 func Flags(flags *pflag.FlagSet) {
 	flags.Bool(RemotingFlag, false, "Use powershell remoting instead of ssh")
-	flags.String(JeaFlag, "", "Name of the powershell JEA configuration")
+	flags.String(jeaFlag, "", "Name of the powershell JEA configuration")
 }
