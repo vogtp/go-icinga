@@ -12,7 +12,12 @@ import (
 )
 
 func (c *Session) init(ctx context.Context) error {
-	c.cmd.Env = append(c.cmd.Environ(), "KRB5_CONFIG=/etc/krb5_ADS.conf")
+	krbConf := viper.GetString(krbcfgFlag)
+	if len(krbConf) > 0 {
+		krbConf = fmt.Sprintf("KRB5_CONFIG=%s", krbConf)
+		slog.Info("Setting kerberos config enviromnet", "config", krbConf)
+		c.cmd.Env = append(c.cmd.Environ(), krbConf)
+	}
 	stdout, err := c.cmd.StdoutPipe()
 	if err != nil {
 		return err
