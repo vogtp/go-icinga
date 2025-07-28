@@ -7,6 +7,8 @@ import (
 	"io"
 	"log/slog"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 func (c *Session) init(ctx context.Context) error {
@@ -40,7 +42,12 @@ func (c *Session) openRemote() {
 	if slog.Default().Enabled(context.Background(), slog.LevelDebug) {
 		c.run("klist -l")
 	}
-	c.run("$%s = New-PSSession %s", sessionName, c.host)
+	jeaConfigName := viper.GetString(JeaFlag)
+	if len(jeaConfigName) > 0 {
+		jeaConfigName = fmt.Sprintf("-ConfigurationName '%s'", jeaConfigName)
+		slog.Info("Using JEA", "configuration", jeaConfigName)
+	}
+	c.run("$%s = New-PSSession %s %s", sessionName, c.host, jeaConfigName)
 	c.resetOutput()
 }
 
@@ -62,7 +69,7 @@ func (c *Session) handleOut(ctx context.Context, name string, r io.Reader, w io.
 	s := bufio.NewScanner(r)
 	s.Split(bufio.ScanLines)
 	for s.Scan() {
-		 t := s.Text()
+		t := s.Text()
 		//for _, t := range strings.Split(s.Text(), "")
 		if strings.HasPrefix(t, prompt) {
 			continue

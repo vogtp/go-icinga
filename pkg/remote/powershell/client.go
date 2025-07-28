@@ -19,9 +19,9 @@ import (
 type Session struct {
 	cmd *exec.Cmd
 
-	host string
-	user string
-	pass string
+	host          string
+	user          string
+	pass          string
 
 	wg sync.WaitGroup
 
