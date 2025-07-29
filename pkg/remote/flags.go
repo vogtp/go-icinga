@@ -53,7 +53,7 @@ func ShouldRemoteRun() bool {
 		return false
 	}
 	rh := viper.GetString(HostFlag)
-	shouldRunRemote := len(rh) > 0 && rh != HostDefault
+	shouldRunRemote := len(rh) > 2 && rh != HostDefault
 	slog.Info("Should the command run remote", "shouldRunRemote", shouldRunRemote, "remoteHost", rh, "remoteHostDefault", HostDefault)
 	return shouldRunRemote
 }
