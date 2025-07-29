@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -19,9 +20,9 @@ import (
 type Session struct {
 	cmd *exec.Cmd
 
-	host          string
-	user          string
-	pass          string
+	host string
+	user string
+	pass string
 
 	wg sync.WaitGroup
 
@@ -50,15 +51,15 @@ func New(ctx context.Context, host string, user string, pass string) (*Session, 
 }
 
 func (c *Session) Run(ctx context.Context, cmd string) ([]byte, []byte, error) {
+	// if len(viper.GetString(jeaFlag)) > 0 {
+	// 	cmd = filepath.Base(cmd)
+	// }
 	if viper.GetBool(log.Debug) {
 		fmt.Fprintln(&c.debugBuffer, cmd)
 	}
 	c.resetOutput()
-	//cmd = fmt.Sprintf("%s%s", remotePath(), cmd)
 	c.run(`$out=Invoke-Command -Session $%s -Command { %s }; echo $out`, sessionName, cmd)
 	out := c.stdout.String()
-	// idx := strings.Index(out, sep)
-	// out = out[idx+len(sep):]
 	slog.Info("Remote powershell command finished", "cmd", cmd, "stdout", out, "stderr", c.stderr.String())
 	return []byte(out), c.stderr.Bytes(), nil
 }
@@ -66,7 +67,7 @@ func (c *Session) Run(ctx context.Context, cmd string) ([]byte, []byte, error) {
 func (*Session) CanCopy() bool { return false }
 
 func (c *Session) Copy(ctx context.Context, local, remote string) error {
-	return fmt.Errorf("Powershell cannot copy to remote: do it manually") //c.session.Copy(ctx, fmt.Sprintf("%s", local), fmt.Sprintf("%s%s", remotePath(), remote))
+	return fmt.Errorf("Powershell cannot copy to remote: do it manually")
 }
 
 func (c *Session) Close() {
@@ -74,7 +75,9 @@ func (c *Session) Close() {
 		return
 	}
 	c.stdin.Close()
-	c.cmd.Cancel()
+	if err := c.cmd.Cancel(); err != nil {
+		slog.Warn("Error closing powershell", "err", err)
+	}
 	slog.Info("Closed powershell session")
 	if viper.GetBool(log.Debug) {
 		fmt.Fprintf(&c.debugBuffer, "Stopped: %s\n", time.Now().Format(time.RFC3339))
@@ -83,7 +86,7 @@ func (c *Session) Close() {
 			fmt.Println(err.Error())
 			return
 		}
-		fmt.Sprintln(f, c.debugBuffer.String())
+		fmt.Fprintln(f, c.debugBuffer.String())
 		f.Close()
 	}
 }
