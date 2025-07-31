@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	goicinga "github.com/vogtp/go-icinga"
+	"github.com/vogtp/go-icinga/pkg/credsmgr"
 	"github.com/vogtp/go-icinga/pkg/director"
 	"github.com/vogtp/go-icinga/pkg/icinga"
 	"github.com/vogtp/go-icinga/pkg/log"
@@ -39,7 +40,6 @@ const (
 )
 
 func (c *Command) ExecuteContext(ctx context.Context) error {
-
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer stop()
 
@@ -100,7 +100,15 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 			return cmd.Help()
 		}
 	}
-
+	if !remote.IsRemoteRun() {
+		if credMgrCmd, err := credsmgr.Command(ctx); err == nil {
+			c.Command.AddCommand(credMgrCmd)
+		} else {
+			slog.Warn("Cannot initalise the credential manager", "err", err)
+		}
+	}
+	//TODO allow usage if log is more than verbose
+	c.Command.SilenceUsage = true
 	return c.Command.ExecuteContext(ctx)
 }
 

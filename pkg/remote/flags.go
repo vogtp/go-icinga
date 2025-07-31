@@ -11,12 +11,12 @@ import (
 	"github.com/vogtp/go-icinga/pkg/remote/ssh"
 )
 
-var ignoredFlags = []string{"help", log.Debug, HostFlag, UserFlag, PasswordFlag, WinRemoteFlag}
+var ignoredFlags = []string{"help", log.Debug, HostFlag, UserFlag, passwordFlag, WinRemoteFlag}
 
 const (
 	HostFlag      = "remote.host"
 	UserFlag      = "remote.user"
-	PasswordFlag  = "remote.password"
+	passwordFlag  = "remote.password"
 	WinRemoteFlag = "remote.windows"
 	RemotePath    = "remote.path"
 	hashCheckFlag = "hash.check"
@@ -31,7 +31,7 @@ func Flags(flags *pflag.FlagSet, defaultRemoteOn bool) {
 	}
 	flags.String(HostFlag, h, "Remote host to run the command on")
 	flags.String(UserFlag, "root", "Remote user name")
-	flags.String(PasswordFlag, "", "Remote user password")
+	flags.String(passwordFlag, "", "Remote user password")
 	flags.Bool(WinRemoteFlag, false, "Is the remote system a windows system?")
 	flags.String(RemotePath, ".", "Remote path for syscheck")
 	flags.String(hashCheckFlag, "", "check the hash")

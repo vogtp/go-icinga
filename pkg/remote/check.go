@@ -1,6 +1,5 @@
 package remote
 
-//go:generate go run gen.go arg1 arg2
 
 import (
 	"context"
@@ -41,7 +40,7 @@ func create(ctx context.Context) (*client, error) {
 		user: viper.GetString(UserFlag),
 		host: viper.GetString(HostFlag),
 	}
-	pass := viper.GetString(PasswordFlag)
+	pass := GetPassword(ctx)
 	if viper.GetBool(powershell.RemotingFlag) {
 		sess, err := powershell.New(ctx, c.host, c.user, pass)
 		if err != nil {
