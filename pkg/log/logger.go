@@ -27,8 +27,10 @@ func Init() *slog.Logger {
 		return logger
 	}
 	logOpts := slog.HandlerOptions{
-		Level: slog.LevelWarn,
+		Level:     slog.LevelWarn,
+		AddSource: viper.GetBool(Debug),
 	}
+
 	var w io.Writer
 	w = &Buffer
 	if viper.GetBool(Verbose) {
