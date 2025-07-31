@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
