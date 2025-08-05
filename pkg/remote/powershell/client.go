@@ -19,6 +19,10 @@ import (
 type Session struct {
 	cmd *exec.Cmd
 
+	ctx       context.Context
+	ctxCancel context.CancelFunc
+	timeOut   time.Duration
+
 	host string
 	user string
 	pass string
@@ -38,11 +42,14 @@ func New(ctx context.Context, host string, user string, pass string) (*Session, 
 		user: user,
 		pass: pass,
 		cmd:  exec.CommandContext(ctx, "pwsh"),
+
+		timeOut: 30 * time.Second,
 	}
+	s.ctx, s.ctxCancel = context.WithTimeout(ctx, s.timeOut)
 	if viper.GetBool(log.Debug) {
 		fmt.Fprintf(&s.debugBuffer, "Started: %s\n", time.Now().Format(time.RFC3339))
 	}
-	if err := s.init(ctx); err != nil {
+	if err := s.init(); err != nil {
 		return nil, fmt.Errorf("cannot initalise remote powershell: %w", err)
 	}
 	s.openRemote()
@@ -63,21 +70,30 @@ func (c *Session) Run(ctx context.Context, cmd string) ([]byte, []byte, error) {
 	return []byte(out), c.stderr.Bytes(), nil
 }
 
-func (*Session) CanCopy() bool { return false }
+func (*Session) CanCopy() bool { return true }
 
 func (c *Session) Copy(ctx context.Context, local, remote string) error {
-	return fmt.Errorf("Powershell cannot copy to remote: do it manually")
+	c.run("copy-Item %s -Destination %s -ToSession %s", local, remote, sessionName)
+	out := c.stdout.String()
+	slog.Info("Remote powershell copy finished", "local", local, "remote", remote, "stdout", out, "stderr", c.stderr.String())
+	if len(c.stderr.Bytes()) > 0 {
+		return fmt.Errorf("powershell copy %s to %s: %s", local, remote, c.stderr.String())
+	}
+	return nil
+	// return fmt.Errorf("Powershell cannot copy to remote: do it manually")
 }
 
 func (c *Session) Close() {
-	if c.cmd == nil {
-		return
+	if c.cmd != nil {
+		c.stdin.Close()
+		if err := c.cmd.Cancel(); err != nil {
+			slog.Warn("Error closing powershell", "err", err)
+		}
+		slog.Info("Closed powershell session")
 	}
-	c.stdin.Close()
-	if err := c.cmd.Cancel(); err != nil {
-		slog.Warn("Error closing powershell", "err", err)
+	if c.ctxCancel != nil {
+		c.ctxCancel()
 	}
-	slog.Info("Closed powershell session")
 	if viper.GetBool(log.Debug) {
 		fmt.Fprintf(&c.debugBuffer, "Stopped: %s\n", time.Now().Format(time.RFC3339))
 		f, err := os.OpenFile("ps_run.out", os.O_APPEND, 0755)

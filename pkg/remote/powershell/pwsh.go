@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func (c *Session) init(ctx context.Context) error {
+func (c *Session) init() error {
 	krbConf := viper.GetString(krbcfgFlag)
 	if len(krbConf) > 0 {
 		krbConf = fmt.Sprintf("KRB5_CONFIG=%s", krbConf)
@@ -26,8 +26,8 @@ func (c *Session) init(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	go c.handleOut(ctx, "stdout", stdout, &c.stdout)
-	go c.handleOut(ctx, "stderr", stderr, &c.stdout)
+	go c.handleOut("stdout", stdout, &c.stdout)
+	go c.handleOut("stderr", stderr, &c.stdout)
 	stdin, err := c.cmd.StdinPipe()
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func (c *Session) openRemote() {
 	if slog.Default().Enabled(context.Background(), slog.LevelDebug) {
 		c.run("klist -l")
 	}
-	jeaConfigName := viper.GetString(jeaFlag)
+	jeaConfigName := viper.GetString(psConfig)
 	if len(jeaConfigName) > 0 {
 		jeaConfigName = fmt.Sprintf("-ConfigurationName '%s'", jeaConfigName)
 		slog.Info("Using JEA", "configuration", jeaConfigName)
@@ -70,7 +70,7 @@ func (c *Session) resetOutput() {
 	c.stderr.Reset()
 }
 
-func (c *Session) handleOut(ctx context.Context, name string, r io.Reader, w io.Writer) {
+func (c *Session) handleOut(name string, r io.Reader, w io.Writer) {
 	s := bufio.NewScanner(r)
 	s.Split(bufio.ScanLines)
 	for s.Scan() {
@@ -91,7 +91,11 @@ func (c *Session) handleOut(ctx context.Context, name string, r io.Reader, w io.
 			slog.Warn("Cannot write powershell output", "writer", name, "err", err)
 		}
 		slog.Debug("Remote powershell", name, c.redactPassword(t))
-		if ctx.Err() != nil {
+		if c.ctx.Err() != nil {
+			slog.Info("Timeout in powershell", "timeout", c.timeOut)
+			if _, err := w.Write([]byte(fmt.Sprintf("Timeout %v", c.timeOut))); err != nil {
+				slog.Info("Error writing timeout info", "err", err)
+			}
 			break
 		}
 	}
