@@ -10,6 +10,9 @@ import (
 )
 
 func GetPassword(ctx context.Context) string {
+	if IsRemoteRun() {
+		return ""
+	}
 	pass := viper.GetString(passwordFlag)
 	if len(pass) > 0 {
 		return pass
