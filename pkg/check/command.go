@@ -104,7 +104,7 @@ func (c *Command) ExecuteContext(ctx context.Context) error {
 		if credMgrCmd, err := credsmgr.Command(ctx); err == nil {
 			c.Command.AddCommand(credMgrCmd)
 		} else {
-			slog.Warn("Cannot initalise the credential manager", "err", err)
+			slog.Debug("Cannot initalise the credential manager command", "err", err)
 		}
 	}
 	//TODO allow usage if log is more than verbose
