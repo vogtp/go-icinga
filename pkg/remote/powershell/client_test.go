@@ -12,6 +12,9 @@ func TestNew(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s.Run(ctx, "c:/programdata/syscheck/syscheck.exe net stat --remote.path c:/programdata/syscheck --remote.windows --verbose --remote.is_remote")
+	_, _, err = s.Run(ctx, "c:/programdata/syscheck/syscheck.exe net stat --remote.path c:/programdata/syscheck --remote.windows --verbose --remote.is_remote")
+	if err != nil {
+		t.Fatal(err)
+	}
 	t.Fail()
 }
