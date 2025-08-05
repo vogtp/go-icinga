@@ -13,6 +13,7 @@ import (
 const (
 	Verbose = "verbose"
 	Debug   = "debug"
+	src     = "log.source"
 )
 
 var (
@@ -27,7 +28,7 @@ func Init() *slog.Logger {
 	}
 	logOpts := slog.HandlerOptions{
 		Level:     slog.LevelWarn,
-		AddSource: viper.GetBool(Debug),
+		AddSource: viper.GetBool(src),
 	}
 
 	var w io.Writer
@@ -52,4 +53,5 @@ func Init() *slog.Logger {
 func Flags(flags *pflag.FlagSet) {
 	flags.Bool(Verbose, false, "Log verbose information")
 	flags.Bool(Debug, false, "Log Debug information")
+	flags.Bool(src, false, "Log source information")
 }
