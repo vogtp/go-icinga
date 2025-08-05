@@ -113,6 +113,9 @@ func (s *Session) run(cmd string, a ...any) {
 }
 
 func (s *Session) redactPassword(str string) string {
+	if len(strings.TrimSpace(s.pass)) < 1 {
+		return str
+	}
 	if strings.Contains(str, s.pass) {
 		return strings.ReplaceAll(str, s.pass, "<REDACTED PASSWORD>")
 	}
